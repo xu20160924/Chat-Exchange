@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ t('Conversation with') }} {{ other.name }}</h1>
+<div class="thread">
+  {% for m in messages %}
+    <div class="msg {% if m.sender_id == current_user.id %}me{% else %}other{% endif %}">
+      <div class="bubble">{{ m.body }}</div>
+      <div class="time muted">{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+    </div>
+  {% else %}
+    <p class="muted">{{ t('No messages yet.') }} {{ t('Type a message...') }}</p>
+  {% endfor %}
+</div>
+<form method="post" class="thread-input">
+  <textarea name="body" placeholder="{{ t('Type a message...') }}" rows="6" required></textarea>
+  <button type="submit" class="btn">{{ t('Send') }}</button>
+</form>
+{% endblock %}

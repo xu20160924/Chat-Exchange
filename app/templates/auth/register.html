@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ t('Sign up') }}</h1>
+<form method="post" action="{{ url_for('auth.register_submit') }}" class="form" id="register-form">
+  <label>{{ t('Name') }}<input type="text" name="name" value="{{ form_data.get('name', '') }}" required></label>
+  <label>{{ t('Email') }}<input type="email" name="email" value="{{ form_data.get('email', '') }}" required></label>
+  <label>
+    {{ t('Password') }}
+    <input type="password" name="password" id="password" value="{{ form_data.get('password', '') }}" required>
+    <small style="color: #666; font-size: 0.85em; margin-top: 4px; display: block;">{{ t('At least 6 characters') }}</small>
+  </label>
+  <label>{{ t('Confirm Password') }}<input type="password" name="confirm_password" id="confirm_password" value="{{ form_data.get('confirm_password', '') }}" required></label>
+  
+  <!-- CAPTCHA verification -->
+  <label style="margin-top: 12px;">
+    {{ t('Verification Code') }}
+    <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+      <img id="captcha-image" src="{{ url_for('auth.get_captcha') }}" alt="CAPTCHA" style="border: 1px solid #ddd; border-radius: 4px; cursor: pointer; height: 40px;" onclick="refreshCaptcha()" title="{{ t('Click to refresh') }}">
+      <button type="button" onclick="refreshCaptcha()" style="padding: 8px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;" title="{{ t('Refresh code') }}">🔄</button>
+      <input type="text" name="captcha" id="captcha" required style="flex: 1; text-transform: uppercase;" placeholder="{{ t('Enter code') }}" maxlength="4" autocomplete="off">
+    </div>
+    <small style="color: #666; font-size: 0.85em;">{{ t('Click the image to refresh') }}</small>
+  </label>
+  
+  <!-- Age verification - above button with visible checkbox -->
+  <div style="margin: 16px 0; padding: 14px 16px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e0e0e0; width: 100%; box-sizing: border-box;">
+    <input type="checkbox" id="age_confirm" style="width: 20px !important; height: 20px !important; margin-right: 10px !important; cursor: pointer !important; vertical-align: middle !important; display: inline-block !important; -webkit-appearance: checkbox !important; appearance: checkbox !important; pointer-events: auto !important; position: relative !important; z-index: 100 !important;">
+    <label for="age_confirm" style="cursor: pointer !important; font-size: 14px !important; color: #333 !important; display: inline !important; vertical-align: middle !important;">
+      {{ t('I confirm that I am 18 years of age or older') }}
+    </label>
+  </div>
+  
+  <button type="submit" class="btn" id="submit-btn">{{ t('Create account') }}</button>
+</form>
+
+<script>
+// Prevent form submission if age not confirmed
+document.getElementById('register-form').addEventListener('submit', function(e) {
+  const ageConfirm = document.getElementById('age_confirm').checked;
+  if (!ageConfirm) {
+    e.preventDefault();
+    alert('{{ t("You must be 18 years or older to register") }}');
+    return false;
+  }
+});
+</script>
+<p>{{ t('Already have an account?') }} <a href="{{ url_for('auth.login_page') }}">{{ t('Sign in') }}</a></p>
+
+<script>
+function refreshCaptcha() {
+  const captchaImage = document.getElementById('captcha-image');
+  // Add timestamp to prevent caching
+  captchaImage.src = "{{ url_for('auth.get_captcha') }}?" + new Date().getTime();
+  // Clear the input field
+  document.getElementById('captcha').value = '';
+  document.getElementById('captcha').focus();
+}
+</script>
+
+<script>
+document.getElementById('register-form').addEventListener('submit', function(e) {
+  const name = document.querySelector('input[name="name"]').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirm_password').value;
+  const email = document.querySelector('input[name="email"]').value.toLowerCase();
+  
+  // Validate name
+  if (!name || name.length < 2) {
+    e.preventDefault();
+    alert('{{ t("Please enter your name (at least 2 characters)") }}');
+    document.querySelector('input[name="name"]').focus();
+    return false;
+  }
+  
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    e.preventDefault();
+    alert('{{ t("Please enter a valid email address") }}');
+    document.querySelector('input[name="email"]').focus();
+    return false;
+  }
+  
+  // Check for admin email
+  if (email.endsWith('@admin') || email.endsWith('@admin.com')) {
+    e.preventDefault();
+    alert('{{ t("@admin.com is invalid email") }}');
+    document.querySelector('input[name="email"]').focus();
+    return false;
+  }
+  
+  if (password !== confirmPassword) {
+    e.preventDefault();
+    alert('{{ t("Passwords do not match. Please try again.") }}');
+    document.getElementById('confirm_password').focus();
+    return false;
+  }
+  
+  if (password.length < 6) {
+    e.preventDefault();
+    alert('{{ t("Password must be at least 6 characters long.") }}');
+    document.getElementById('password').focus();
+    return false;
+  }
+});
+
+// Real-time name validation
+document.querySelector('input[name="name"]').addEventListener('input', function() {
+  const name = this.value.trim();
+  
+  if (name.length === 0) {
+    this.style.borderColor = '#dadce0';
+    this.style.backgroundColor = '#fff';
+  } else if (name.length < 2) {
+    this.style.borderColor = '#ffc107';
+    this.style.backgroundColor = '#fff3cd';
+  } else {
+    this.style.borderColor = '#28a745';
+    this.style.backgroundColor = '#d4edda';
+  }
+});
+
+// Real-time password match validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+  const password = document.getElementById('password').value;
+  const confirmPassword = this.value;
+  
+  if (confirmPassword && password !== confirmPassword) {
+    this.style.borderColor = '#dc3545';
+    this.style.backgroundColor = '#f8d7da';
+  } else {
+    this.style.borderColor = '#28a745';
+    this.style.backgroundColor = '#d4edda';
+  }
+});
+
+// Real-time email format validation
+document.querySelector('input[name="email"]').addEventListener('input', function() {
+  const email = this.value.toLowerCase();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  // Check email format
+  if (email && !emailRegex.test(email)) {
+    this.style.borderColor = '#dc3545';
+    this.style.backgroundColor = '#f8d7da';
+    
+    // Show format warning message
+    let formatWarning = document.getElementById('email-format-warning');
+    if (!formatWarning) {
+      formatWarning = document.createElement('div');
+      formatWarning.id = 'email-format-warning';
+      formatWarning.style.color = '#dc3545';
+      formatWarning.style.fontSize = '0.9em';
+      formatWarning.style.marginTop = '4px';
+      formatWarning.style.padding = '4px 8px';
+      formatWarning.style.backgroundColor = '#f8d7da';
+      formatWarning.style.border = '1px solid #f5c6cb';
+      formatWarning.style.borderRadius = '4px';
+      formatWarning.textContent = '{{ t("Please enter a valid email address") }}';
+      this.parentNode.appendChild(formatWarning);
+    }
+  } else {
+    this.style.borderColor = '#dadce0';
+    this.style.backgroundColor = '#fff';
+    
+    // Remove format warning message
+    const formatWarning = document.getElementById('email-format-warning');
+    if (formatWarning) {
+      formatWarning.remove();
+    }
+  }
+  
+  // Check for admin email
+  if (email.endsWith('@admin') || email.endsWith('@admin.com')) {
+    this.style.borderColor = '#dc3545';
+    this.style.backgroundColor = '#f8d7da';
+    
+    // Show admin warning message
+    let adminWarning = document.getElementById('admin-email-warning');
+    if (!adminWarning) {
+      adminWarning = document.createElement('div');
+      adminWarning.id = 'admin-email-warning';
+      adminWarning.style.color = '#dc3545';
+      adminWarning.style.fontSize = '0.9em';
+      adminWarning.style.marginTop = '4px';
+      adminWarning.style.padding = '4px 8px';
+      adminWarning.style.backgroundColor = '#f8d7da';
+      adminWarning.style.border = '1px solid #f5c6cb';
+      adminWarning.style.borderRadius = '4px';
+      adminWarning.textContent = '{{ t("@admin.com is invalid email") }}';
+      this.parentNode.appendChild(adminWarning);
+    }
+  } else {
+    // Remove admin warning message
+    const adminWarning = document.getElementById('admin-email-warning');
+    if (adminWarning) {
+      adminWarning.remove();
+    }
+  }
+});
+</script>
+{% endblock %}

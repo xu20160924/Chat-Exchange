@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<article class="profile">
+  <div class="profile-card">
+    <img class="profile-avatar" src="{{ profile.get_avatar_url() }}" alt="avatar">
+    <div>
+      <h1 class="profile-name">{{ profile.name }}</h1>
+      <div class="muted">{{ t('Location') }}: {{ profile.location or '—' }}</div>
+      <div class="chips" style="margin-top:6px">
+        {% if profile.native_languages %}<span class="chip chip-native">{{ t('Native') }}: {{ profile.native_languages }}</span>{% endif %}
+        {% if profile.learning_languages %}<span class="chip chip-learn">{{ t('Learning') }}: {{ profile.learning_languages }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if profile.bio %}
+  <section class="info-card">
+    <h3 class="info-title">About</h3>
+    <p class="info-text">{{ profile.bio }}</p>
+  </section>
+  {% endif %}
+
+  <section class="info-card">
+    <h3 class="info-title">More</h3>
+    <dl class="info-list">
+      <div class="info-row">
+        <dt>Goal</dt>
+        <dd>{{ profile.learning_goal or '—' }}</dd>
+      </div>
+      <div class="info-row">
+        <dt>Hobbies</dt>
+        <dd>{{ profile.hobbies or '—' }}</dd>
+      </div>
+      <div class="info-row">
+        <dt>Current level</dt>
+        <dd>{{ profile.current_level or '—' }}</dd>
+      </div>
+      <div class="info-row">
+        <dt>Sex</dt>
+        <dd>{{ profile.sex or '—' }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  {% if current_user.is_authenticated and current_user.id != profile.id %}
+  <section class="info-card message-form-card">
+    <h3 class="info-title">{{ t('Send Message') }}</h3>
+    <form action="{{ url_for('msg.send_message', other_id=profile.id) }}" method="post" class="message-form">
+      <div class="message-input-wrapper">
+        <input type="text" name="body" class="message-input" placeholder="{{ t('Type a message...') }}" required>
+        <button type="submit" class="btn-message-send">{{ t('Send') }}</button>
+      </div>
+    </form>
+  </section>
+  {% endif %}
+</article>
+{% endblock %}

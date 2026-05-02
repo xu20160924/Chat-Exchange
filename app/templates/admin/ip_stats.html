@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="admin-analytics">
+  <h1>🌐 IP:Port Access Statistics</h1>
+  <p class="muted">Track how many users are still accessing via IP:port before redirect</p>
+  <p class="timezone-info">🕐 All times are in Shanghai timezone (UTC+8)</p>
+
+  <!-- Admin Navigation -->
+  <div class="admin-nav">
+    <a href="{{ url_for('main.admin_analytics') }}" class="nav-link">📊 UV Analytics</a>
+    <a href="{{ url_for('main.admin_ip_stats') }}" class="nav-link active">🌐 IP:Port Stats</a>
+    <a href="{{ url_for('main.admin_crawler_stats') }}" class="nav-link">🤖 Crawler Stats</a>
+    <a href="{{ url_for('main.admin_api_stats') }}" class="nav-link">📊 API Stats</a>
+    <a href="{{ url_for('main.admin_contact_messages') }}" class="nav-link">📧 Contact Messages</a>
+    <a href="{{ url_for('main.admin_user_management') }}" class="nav-link">👥 User Management</a>
+  </div>
+
+  <!-- IP Access Statistics -->
+  <div class="analytics-section">
+    <h2>📊 IP:Port Access Overview</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ "{:,}".format(stat.total_ip_access) }}</div>
+        <div class="stat-label">Total IP:Port Requests</div>
+        <div class="stat-subtitle">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ "{:,}".format(stat.today_ip_access) }}</div>
+        <div class="stat-label">Today's IP:Port Requests</div>
+        <div class="stat-subtitle">Since midnight</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ "%.2f"|format(ip_access_percentage) }}%</div>
+        <div class="stat-label">Total IP Access Rate</div>
+        <div class="stat-subtitle">Of all visits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ "%.2f"|format(today_ip_access_percentage) }}%</div>
+        <div class="stat-label">Today's IP Access Rate</div>
+        <div class="stat-subtitle">Of today's visits</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Analysis -->
+  <div class="analytics-section">
+    <h2>📈 Analysis</h2>
+    <div class="analysis-grid">
+      <div class="analysis-card">
+        <h3>🔍 What This Means</h3>
+        <p>These numbers show how many users are still accessing your website via IP:port before being redirected to your domain.</p>
+      </div>
+      
+      <div class="analysis-card">
+        <h3>📊 Current Status</h3>
+        {% if stat.total_ip_access == 0 %}
+          <p class="success-text">✅ <strong>Perfect!</strong> No users are accessing via IP:port. All traffic is coming through the domain.</p>
+        {% elif ip_access_percentage < 5 %}
+          <p class="warning-text">⚠️ <strong>Low IP Access:</strong> Only {{ "%.2f"|format(ip_access_percentage) }}% of users access via IP:port. Most users are using the domain.</p>
+        {% elif ip_access_percentage < 20 %}
+          <p class="info-text">ℹ️ <strong>Moderate IP Access:</strong> {{ "%.2f"|format(ip_access_percentage) }}% of users still access via IP:port. Consider promoting the domain more.</p>
+        {% else %}
+          <p class="error-text">🚨 <strong>High IP Access:</strong> {{ "%.2f"|format(ip_access_percentage) }}% of users access via IP:port. Many users may not know about the domain.</p>
+        {% endif %}
+      </div>
+      
+      <div class="analysis-card">
+        <h3>🎯 Recommendations</h3>
+        <ul>
+          <li><strong>If IP access is high:</strong> Promote the domain <code>chat-exchange.online</code> in your marketing materials</li>
+          <li><strong>If IP access is low:</strong> Great! Users are finding and using the domain</li>
+          <li><strong>Monitor trends:</strong> Watch if IP access decreases over time as users learn about the domain</li>
+          <li><strong>SEO benefit:</strong> Domain access is better for SEO than IP:port access</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Technical Details -->
+  <div class="analytics-section">
+    <h2>⚙️ Technical Details</h2>
+    <div class="tech-details">
+      <div class="tech-item">
+        <strong>Monitored IP:Port combinations:</strong>
+        <ul>
+          <li><code>YOUR_SERVER_IP:5000</code></li>
+          <li><code>YOUR_SERVER_IP</code></li>
+          <li><code>YOUR_SERVER_IP:80</code></li>
+        </ul>
+      </div>
+      <div class="tech-item">
+        <strong>Redirect behavior:</strong>
+        <p>Users accessing via IP:port are automatically redirected to your domain with a 301 permanent redirect, preserving the original path and query parameters.</p>
+      </div>
+      <div class="tech-item">
+        <strong>Tracking method:</strong>
+        <p>Each IP:port access is counted before the redirect occurs, ensuring accurate tracking of users who haven't discovered the domain yet.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-analytics {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.admin-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: #e9ecef;
+  border-color: #0d6efd;
+}
+
+.nav-link.active {
+  background: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+
+.analytics-section {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #f8f9fa;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0d6efd;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.stat-subtitle {
+  font-size: 12px;
+  color: #666;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.analysis-card {
+  background: #f8f9fa;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.analysis-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.analysis-card p {
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  color: #555;
+}
+
+.analysis-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.analysis-card li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.success-text { color: #0a6847; }
+.warning-text { color: #664d03; }
+.info-text { color: #055160; }
+.error-text { color: #842029; }
+
+.tech-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.tech-item {
+  background: #f8f9fa;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.tech-item strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.tech-item ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.tech-item li {
+  margin-bottom: 4px;
+  font-family: 'Courier New', monospace;
+  background: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e5e5e5;
+}
+
+.tech-item p {
+  margin: 8px 0 0 0;
+  line-height: 1.5;
+  color: #555;
+}
+
+code {
+  background: #f1f3f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+  .admin-analytics {
+    padding: 16px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tech-details {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}

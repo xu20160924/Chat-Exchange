@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Email Login Form (Main login method for Chat-Exchange) -->
+<div style="max-width: 400px; margin: 30px auto;">
+  <h2 style="text-align: center; margin-bottom: 20px;">{{ t('Sign in title') }}</h2>
+  <form method="post" action="{{ url_for('auth.login_submit') }}" class="form">
+    <label>{{ t('Email') }}<input type="email" name="email" required></label>
+    <label>{{ t('Password') }}<input type="password" name="password" required></label>
+    <button type="submit" class="btn">{{ t('Sign in') }}</button>
+  </form>
+</div>
+
+<p style="text-align: center; margin-top: 24px;">{{ t("Don't have an account?") }} <a href="{{ url_for('auth.register_page') }}">{{ t('Sign up') }}</a></p>
+{% endblock %}

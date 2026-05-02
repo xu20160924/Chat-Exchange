@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="admin-user-management">
+  <h1>👥 User Management</h1>
+  <p class="muted">Manage user accounts and permissions</p>
+  <p class="stats-note">📊 Statistics below show totals across all users, not just the current page</p>
+
+  <!-- Admin Navigation -->
+  <div class="admin-nav">
+    <a href="{{ url_for('main.admin_analytics') }}" class="nav-link">📊 UV Analytics</a>
+    <a href="{{ url_for('main.admin_ip_stats') }}" class="nav-link">🌐 IP:Port Stats</a>
+    <a href="{{ url_for('main.admin_crawler_stats') }}" class="nav-link">🤖 Crawler Stats</a>
+    <a href="{{ url_for('main.admin_api_stats') }}" class="nav-link">📊 API Stats</a>
+    <a href="{{ url_for('main.admin_contact_messages') }}" class="nav-link">📧 Contact Messages</a>
+    <a href="{{ url_for('main.admin_user_management') }}" class="nav-link active">👥 User Management</a>
+  </div>
+
+  <!-- User Statistics -->
+  <div class="user-stats">
+    <div class="stat-card">
+      <div class="stat-number">{{ total_users }}</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ active_users }}</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ disabled_users }}</div>
+      <div class="stat-label">Disabled Users</div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="users-table">
+    <table class="analytics-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Last Login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users.items %}
+        <tr class="{% if user.disabled %}disabled-user{% endif %}">
+          <td>{{ user.id }}</td>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            {% if user.email.endswith('@admin.com') %}
+              <span class="status-admin">Admin</span>
+            {% elif user.disabled %}
+              <span class="status-disabled">Disabled</span>
+            {% else %}
+              <span class="status-active">Active</span>
+            {% endif %}
+          </td>
+          <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+          <td>
+            {% if user.last_login %}
+              {{ user.last_login.strftime('%Y-%m-%d %H:%M') }}
+            {% else %}
+              Never
+            {% endif %}
+          </td>
+          <td class="actions">
+            {% if not user.email.endswith('@admin.com') %}
+              <form method="post" action="{{ url_for('main.admin_toggle_user', user_id=user.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-sm {% if user.disabled %}btn-success{% else %}btn-warning{% endif %}">
+                  {% if user.disabled %}{{ t('Enable') }}{% else %}{{ t('Disable') }}{% endif %}
+                </button>
+              </form>
+              
+              <form method="post" action="{{ url_for('main.admin_delete_user', user_id=user.id) }}" 
+                    style="display: inline;" 
+                    onsubmit="return confirmDelete()">
+                <button type="submit" class="btn btn-sm btn-danger">{{ t('Delete') }}</button>
+              </form>
+            {% else %}
+              <span class="muted">{{ t('Admin User') }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if users.pages > 1 %}
+  <div class="pagination">
+    {% if users.has_prev %}
+      <a href="{{ url_for('main.admin_user_management', page=users.prev_num) }}" class="btn btn-outline">Previous</a>
+    {% endif %}
+    
+    <span class="page-info">
+      Page {{ users.page }} of {{ users.pages }}
+    </span>
+    
+    {% if users.has_next %}
+      <a href="{{ url_for('main.admin_user_management', page=users.next_num) }}" class="btn btn-outline">Next</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.admin-user-management {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.user-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.stat-number {
+  font-size: 2em;
+  font-weight: bold;
+  color: #0d6efd;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.users-table {
+  margin-top: 24px;
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.analytics-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.analytics-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.disabled-user {
+  background: #f8f9fa;
+  opacity: 0.7;
+}
+
+.status-active {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-disabled {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.status-admin {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.actions form {
+  margin-right: 8px;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.8em;
+}
+
+.btn-success {
+  background: #28a745;
+  color: #fff;
+  border: none;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #000;
+  border: none;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #0d6efd;
+  color: #0d6efd;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.page-info {
+  color: #666;
+  font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+  .analytics-table {
+    font-size: 0.9em;
+  }
+  
+  .analytics-table th,
+  .analytics-table td {
+    padding: 8px 6px;
+  }
+  
+  .user-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.stats-note {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  color: #1565c0;
+  font-size: 14px;
+  font-weight: 500;
+}
+</style>
+
+<script>
+function confirmDelete() {
+    return confirm('Are you sure you want to delete this user? This action cannot be undone.');
+}
+</script>
+{% endblock %}

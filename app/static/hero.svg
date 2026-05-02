@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="420" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#6ea8fe"/>
+      <stop offset="100%" stop-color="#91f2c3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="420" fill="url(#g)"/>
+  <g fill="#ffffff" fill-opacity="0.25">
+    <!-- moved away from top-left to avoid overlapping the title -->
+    <circle cx="360" cy="200" r="80"/>
+    <circle cx="560" cy="120" r="50"/>
+    <circle cx="760" cy="180" r="120"/>
+    <circle cx="1080" cy="120" r="80"/>
+    <circle cx="1240" cy="220" r="60"/>
+  </g>
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial" fill="#0b3665">
+    <text x="32" y="86" font-size="44" font-weight="700">Chat-Exchange</text>
+    <text x="32" y="118" font-size="22" fill="#0b3665" opacity="0.9">Find partners to practice languages together.</text>
+  </g>
+</svg>

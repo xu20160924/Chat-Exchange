@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="inbox-header">
+  <h1>{{ t('Inbox') }}</h1>
+  <p class="inbox-subtitle">{{ t('Your conversations') }}</p>
+</div>
+
+<div class="inbox-container">
+  {% if entries %}
+    <div class="conversation-list">
+      {% for e in entries %}
+      <div class="conversation-item">
+        <a href="{{ url_for('msg.thread', other_id=e.other.id) }}" class="conversation-link">
+          <div class="conversation-avatar">
+            {% set avatar = 'avatar_female.svg' if (e.other.sex == 'Female') else 'avatar_male.svg' %}
+            <img src="{{ url_for('static', filename=avatar) }}" alt="{{ e.other.name }}" class="avatar-img">
+          </div>
+          <div class="conversation-content">
+            <div class="conversation-header">
+              <h3 class="conversation-name">{{ e.other.name }}</h3>
+              <span class="conversation-time">{{ e.last.created_at.strftime('%m/%d %H:%M') }}</span>
+            </div>
+            <div class="conversation-preview">
+              <span class="preview-text">{{ e.last.body[:60] }}{% if e.last.body|length > 60 %}...{% endif %}</span>
+              {% if e.last.sender_id == current_user.id %}
+                <span class="sent-indicator">{{ t('You') }}:</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="conversation-arrow">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-inbox">
+      <div class="empty-icon">💬</div>
+      <h3>{{ t('No conversations yet') }}</h3>
+      <p>{{ t('Start a conversation by finding language partners in the search page.') }}</p>
+      <a href="{{ url_for('main.search') }}" class="btn">{{ t('Find Partners') }}</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

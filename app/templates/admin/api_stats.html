@@ -1,0 +1,693 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="admin-analytics">
+  <h1>📊 API Request Statistics</h1>
+  <p class="muted">Admin-only analytics - not displayed on public website</p>
+  <p class="timezone-info">🕐 All times are in Shanghai timezone (UTC+8)</p>
+
+  <!-- Admin Navigation -->
+  <div class="admin-nav">
+    <a href="{{ url_for('main.admin_analytics') }}" class="nav-link">📊 UV Analytics</a>
+    <a href="{{ url_for('main.admin_ip_stats') }}" class="nav-link">🌐 IP:Port Stats</a>
+    <a href="{{ url_for('main.admin_crawler_stats') }}" class="nav-link">🤖 Crawler Stats</a>
+    <a href="{{ url_for('main.admin_api_stats') }}" class="nav-link active">📊 API Stats</a>
+    <a href="{{ url_for('main.admin_contact_messages') }}" class="nav-link">📧 Contact Messages</a>
+    <a href="{{ url_for('main.admin_user_management') }}" class="nav-link">👥 User Management</a>
+  </div>
+
+  <!-- Endpoint Statistics -->
+  <div class="analytics-section">
+    <h2>🔗 Endpoint Statistics (Last 7 Days)</h2>
+    <div class="stats-grid">
+      {% for stat in endpoint_stats %}
+      <div class="stat-card">
+        <h3>{{ stat.endpoint or 'Unknown' }}</h3>
+        <div class="stat-value">{{ stat.request_count }}</div>
+        <div class="stat-label">Requests</div>
+        <div class="stat-detail">Avg Response: {{ "%.1f"|format(stat.avg_response_time or 0) }}ms</div>
+        <div class="stat-detail">Unique IPs: {{ stat.unique_ips }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Search Analytics -->
+  {% if search_analytics %}
+  <div class="analytics-section">
+        <h2>🔍 Search Analytics (Last 7 Days)</h2>
+        <div class="search-stats">
+            <div class="search-summary">
+                <div class="stat-item">
+                    <span class="stat-label">Total Searches:</span>
+                    <span class="stat-value">{{ search_analytics.total_searches }}</span>
+                </div>
+            </div>
+            
+            {% if search_analytics.speak_languages %}
+            <div class="search-category">
+                <h3>🗣️ Native Languages</h3>
+                <div class="tag-cloud">
+                    {% for lang, count in search_analytics.speak_languages.items() %}
+                    <span class="tag" style="font-size: {{ (count / search_analytics.total_searches * 20) + 12 }}px">
+                        {{ lang }} ({{ count }})
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if search_analytics.learn_languages %}
+            <div class="search-category">
+                <h3>📚 Learning Languages</h3>
+                <div class="tag-cloud">
+                    {% for lang, count in search_analytics.learn_languages.items() %}
+                    <span class="tag" style="font-size: {{ (count / search_analytics.total_searches * 20) + 12 }}px">
+                        {{ lang }} ({{ count }})
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if search_analytics.locations %}
+            <div class="search-category">
+                <h3>📍 Locations</h3>
+                <div class="tag-cloud">
+                    {% for loc, count in search_analytics.locations.items() %}
+                    <span class="tag" style="font-size: {{ (count / search_analytics.total_searches * 20) + 12 }}px">
+                        {{ loc }} ({{ count }})
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if search_analytics.modes %}
+            <div class="search-category">
+                <h3>🔍 Search Modes</h3>
+                <div class="tag-cloud">
+                    {% for mode, count in search_analytics.modes.items() %}
+                    <span class="tag" style="font-size: {{ (count / search_analytics.total_searches * 20) + 12 }}px">
+                        {{ mode }} ({{ count }})
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+  <!-- Detailed Search Requests -->
+  {% if detailed_search_requests %}
+  <div class="analytics-section">
+        <h2>🔍 Detailed Search Requests (Last 7 Days)</h2>
+        <div class="search-requests-container">
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>IP</th>
+                        <th>User</th>
+                        <th>Response Time</th>
+                        <th>Status</th>
+                        <th>Search Parameters</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in detailed_search_requests %}
+                    <tr>
+                        <td>{{ req.created_at.strftime('%m-%d %H:%M:%S') }}</td>
+                        <td>{{ req.ip_address }}</td>
+                        <td>
+                            {% if req.is_authenticated %}
+                                <span class="user-badge">👤 User {{ req.user_id }}</span>
+                            {% else %}
+                                <span class="guest-badge">👤 Guest</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.1f"|format(req.response_time_ms or 0) }}ms</td>
+                        <td>
+                            {% if req.status_code %}
+                                <span class="status-badge status-{{ (req.status_code // 100) * 100 }}">
+                                    {{ req.status_code }}
+                                </span>
+                            {% else %}
+                                <span class="status-badge">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="search-params">
+                            {% if req.parameters %}
+                                <div class="param-summary">
+                                    {% if req.parameters.speak %}
+                                        <span class="param-tag">Speak: {{ req.parameters.speak }}</span>
+                                    {% endif %}
+                                    {% if req.parameters.learn %}
+                                        <span class="param-tag">Learn: {{ req.parameters.learn }}</span>
+                                    {% endif %}
+                                    {% if req.parameters.location %}
+                                        <span class="param-tag">Location: {{ req.parameters.location }}</span>
+                                    {% endif %}
+                                    {% if req.parameters.mode %}
+                                        <span class="param-tag">Mode: {{ req.parameters.mode }}</span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="no-params">No parameters</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="params-btn" onclick="showDetailedParams({{ req.id }})">View Details</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+  <!-- Recent API Requests -->
+  <div class="analytics-section">
+        <h2>📋 Recent API Requests (Last 50)</h2>
+        <div class="requests-table-container">
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Path</th>
+                        <th>IP</th>
+                        <th>User</th>
+                        <th>Response Time</th>
+                        <th>Status</th>
+                        <th>Parameters</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in recent_requests %}
+                    <tr>
+                        <td>{{ req.created_at.strftime('%m-%d %H:%M:%S') }}</td>
+                        <td><span class="method-badge method-{{ req.method.lower() }}">{{ req.method }}</span></td>
+                        <td>{{ req.endpoint or 'N/A' }}</td>
+                        <td class="path-cell">{{ req.path[:50] }}{% if req.path|length > 50 %}...{% endif %}</td>
+                        <td>{{ req.ip_address }}</td>
+                        <td>
+                            {% if req.is_authenticated %}
+                                <span class="user-badge">👤 User {{ req.user_id }}</span>
+                            {% else %}
+                                <span class="guest-badge">👤 Guest</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.1f"|format(req.response_time_ms or 0) }}ms</td>
+                        <td>
+                            {% if req.status_code %}
+                                <span class="status-badge status-{{ (req.status_code // 100) * 100 }}">
+                                    {{ req.status_code }}
+                                </span>
+                            {% else %}
+                                <span class="status-badge">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="params-cell">
+                            {% if req.query_params %}
+                                <button class="params-btn" onclick="showParams('{{ req.id }}', 'query')">Query</button>
+                            {% endif %}
+                            {% if req.form_data %}
+                                <button class="params-btn" onclick="showParams('{{ req.id }}', 'form')">Form</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+  <!-- Hourly Request Chart -->
+  {% if hourly_requests %}
+  <div class="analytics-section">
+        <h2>📈 Request Volume (Last 24 Hours)</h2>
+        <div class="chart-container">
+            <div class="hourly-chart">
+                {% for hour_data in hourly_requests %}
+                <div class="chart-bar">
+                    <div class="bar" style="height: {{ (hour_data.request_count / hourly_requests|map(attribute='request_count')|max * 100) }}%"></div>
+                    <div class="bar-label">{{ hour_data.hour.split(' ')[1][:5] }}</div>
+                    <div class="bar-value">{{ hour_data.request_count }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Parameters Modal -->
+<div id="paramsModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Request Parameters</h3>
+        <div id="paramsContent"></div>
+    </div>
+</div>
+
+<style>
+.admin-analytics {
+    max-width: 98%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.admin-nav {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-link {
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #495057;
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.nav-link.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.analytics-panel {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+}
+
+.stat-card h3 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 16px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.stat-detail {
+    color: #6c757d;
+    font-size: 11px;
+}
+
+.search-stats {
+    margin-top: 15px;
+}
+
+.search-summary {
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.search-category {
+    margin-bottom: 20px;
+}
+
+.search-category h3 {
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag {
+    background: #e9ecef;
+    color: #495057;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.requests-table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.analytics-table th,
+.analytics-table td {
+    padding: 8px 6px;
+    text-align: left;
+    border-bottom: 1px solid #e5e5e5;
+    vertical-align: top;
+}
+
+.analytics-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.method-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.method-get { background: #d4edda; color: #155724; }
+.method-post { background: #d1ecf1; color: #0c5460; }
+.method-put { background: #fff3cd; color: #856404; }
+.method-delete { background: #f8d7da; color: #721c24; }
+
+.user-badge, .guest-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+}
+
+.user-badge { background: #d4edda; color: #155724; }
+.guest-badge { background: #e2e3e5; color: #6c757d; }
+
+.status-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.status-200 { background: #d4edda; color: #155724; }
+.status-300 { background: #fff3cd; color: #856404; }
+.status-400 { background: #f8d7da; color: #721c24; }
+.status-500 { background: #f8d7da; color: #721c24; }
+
+.params-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    cursor: pointer;
+    margin-right: 4px;
+}
+
+.params-btn:hover {
+    background: #0056b3;
+}
+
+.path-cell, .params-cell {
+    max-width: 150px;
+    word-break: break-all;
+}
+
+.chart-container {
+    margin-top: 15px;
+}
+
+.hourly-chart {
+    display: flex;
+    align-items: end;
+    height: 200px;
+    gap: 4px;
+    padding: 10px 0;
+}
+
+.chart-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.bar {
+    width: 100%;
+    background: #007bff;
+    border-radius: 2px 2px 0 0;
+    min-height: 2px;
+    transition: all 0.2s;
+}
+
+.bar:hover {
+    background: #0056b3;
+}
+
+.bar-label {
+    font-size: 10px;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.bar-value {
+    font-size: 9px;
+    color: #495057;
+    margin-top: 2px;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+#paramsContent {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-requests-container {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.search-params {
+    max-width: 300px;
+}
+
+.param-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.param-tag {
+    background: #e9ecef;
+    color: #495057;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.no-params {
+    color: #6c757d;
+    font-style: italic;
+    font-size: 11px;
+}
+
+@media (max-width: 768px) {
+    .admin-analytics {
+        padding: 10px;
+    }
+    
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .admin-nav {
+        flex-wrap: wrap;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .analytics-table {
+        font-size: 11px;
+    }
+    
+    .analytics-table th,
+    .analytics-table td {
+        padding: 6px 4px;
+    }
+}
+</style>
+
+<script>
+// Modal functionality
+const modal = document.getElementById('paramsModal');
+const closeBtn = document.getElementsByClassName('close')[0];
+
+closeBtn.onclick = function() {
+    modal.style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function showParams(requestId, type) {
+    // This would need to be implemented with AJAX to fetch the actual parameters
+    // For now, show a placeholder
+    document.getElementById('paramsContent').textContent = 
+        `Request ID: ${requestId}\nType: ${type}\n\nParameters would be loaded here...`;
+    modal.style.display = 'block';
+}
+
+function showDetailedParams(requestId) {
+    // Fetch detailed parameters via AJAX
+    fetch(`/admin/api-request/${requestId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('paramsContent').textContent = `Error: ${data.error}`;
+            } else {
+                // Format the detailed parameters nicely
+                let content = `Request Details:\n`;
+                content += `ID: ${data.id}\n`;
+                content += `Method: ${data.method}\n`;
+                content += `Path: ${data.path}\n`;
+                content += `Endpoint: ${data.endpoint || 'N/A'}\n`;
+                content += `Created: ${data.created_at}\n`;
+                content += `IP: ${data.ip_address}\n`;
+                content += `User: ${data.is_authenticated ? `User ${data.user_id}` : 'Guest'}\n`;
+                content += `Response Time: ${data.response_time_ms || 0}ms\n`;
+                content += `Status: ${data.status_code || 'N/A'}\n\n`;
+                
+                if (data.query_params && Object.keys(data.query_params).length > 0) {
+                    content += `Query Parameters:\n`;
+                    for (const [key, value] of Object.entries(data.query_params)) {
+                        content += `  ${key}: ${value}\n`;
+                    }
+                    content += `\n`;
+                }
+                
+                if (data.form_data && Object.keys(data.form_data).length > 0) {
+                    content += `Form Data:\n`;
+                    for (const [key, value] of Object.entries(data.form_data)) {
+                        content += `  ${key}: ${value}\n`;
+                    }
+                    content += `\n`;
+                }
+                
+                if (data.headers && Object.keys(data.headers).length > 0) {
+                    content += `Headers:\n`;
+                    for (const [key, value] of Object.entries(data.headers)) {
+                        content += `  ${key}: ${value}\n`;
+                    }
+                }
+                
+                document.getElementById('paramsContent').textContent = content;
+            }
+            modal.style.display = 'block';
+        })
+        .catch(error => {
+            document.getElementById('paramsContent').textContent = `Error fetching request details: ${error.message}`;
+            modal.style.display = 'block';
+        });
+}
+</script>
+{% endblock %}

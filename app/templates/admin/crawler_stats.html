@@ -1,0 +1,507 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="admin-analytics">
+  <h1>🤖 Crawler & Bot Statistics</h1>
+  <p class="muted">Track search engine crawlers and bot traffic separately from real users</p>
+  <p class="timezone-info">🕐 All times are in Shanghai timezone (UTC+8)</p>
+
+  <!-- Admin Navigation -->
+  <div class="admin-nav">
+    <a href="{{ url_for('main.admin_analytics') }}" class="nav-link">📊 UV Analytics</a>
+    <a href="{{ url_for('main.admin_ip_stats') }}" class="nav-link">🌐 IP:Port Stats</a>
+    <a href="{{ url_for('main.admin_crawler_stats') }}" class="nav-link active">🤖 Crawler Stats</a>
+    <a href="{{ url_for('main.admin_api_stats') }}" class="nav-link">📊 API Stats</a>
+    <a href="{{ url_for('main.admin_contact_messages') }}" class="nav-link">📧 Contact Messages</a>
+    <a href="{{ url_for('main.admin_user_management') }}" class="nav-link">👥 User Management</a>
+  </div>
+
+  <!-- Overall Visit Statistics (Last 7 Days) -->
+  <div class="analytics-section">
+    <h2>📈 Overall Visit Statistics (Last 7 Days)</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ "{:,}".format(visit_stats.total_visits) }}</div>
+        <div class="stat-label">Total Visits</div>
+        <div class="stat-subtitle">All traffic</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ "{:,}".format(visit_stats.user_visits) }}</div>
+        <div class="stat-label">Real User Visits</div>
+        <div class="stat-subtitle">Excluding crawlers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ "{:,}".format(visit_stats.crawler_visits) }}</div>
+        <div class="stat-label">Crawler Visits</div>
+        <div class="stat-subtitle">Bots & search engines</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ "%.1f"|format(visit_stats.crawler_percentage) }}%</div>
+        <div class="stat-label">Crawler Traffic</div>
+        <div class="stat-subtitle">Percentage of total</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crawler Breakdown (Last 7 Days) -->
+  {% if crawler_stats.crawler_counts %}
+  <div class="analytics-section">
+    <h2>🔍 Crawler Breakdown (Last 7 Days)</h2>
+    <div class="crawler-grid">
+      {% for crawler_name, count in crawler_stats.crawler_counts %}
+      <div class="crawler-card">
+        <div class="crawler-icon">
+          {% if 'Google' in crawler_name %}🔵
+          {% elif 'Bing' in crawler_name %}🟢
+          {% elif 'Baidu' in crawler_name %}🔴
+          {% elif 'Yandex' in crawler_name %}🟡
+          {% elif 'Facebook' in crawler_name or 'Twitter' in crawler_name or 'LinkedIn' in crawler_name %}📱
+          {% else %}🤖
+          {% endif %}
+        </div>
+        <div class="crawler-name">{{ crawler_name }}</div>
+        <div class="crawler-count">{{ "{:,}".format(count) }} requests</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Most Visited Pages (Real Users) -->
+  {% if popular_pages_users %}
+  <div class="analytics-section">
+    <h2>📊 Most Popular Pages - Real Users (Last 7 Days)</h2>
+    <div class="pages-table">
+      <table class="analytics-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Page Path</th>
+            <th>Visits</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set total_visits = popular_pages_users | sum(attribute=1) %}
+          {% for path, count in popular_pages_users %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td class="page-path">{{ path }}</td>
+            <td>{{ "{:,}".format(count) }}</td>
+            <td>
+              <div class="progress-bar-container">
+                <div class="progress-bar" style="width: {{ (count / total_visits * 100) if total_visits > 0 else 0 }}%"></div>
+                <span class="progress-text">{{ "%.1f"|format((count / total_visits * 100) if total_visits > 0 else 0) }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Most Visited Pages (Including Crawlers) -->
+  {% if popular_pages_all %}
+  <div class="analytics-section">
+    <h2>🌐 Most Visited Pages - All Traffic (Last 7 Days)</h2>
+    <div class="pages-table">
+      <table class="analytics-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Page Path</th>
+            <th>Total Visits</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set total_visits_all = popular_pages_all | sum(attribute=1) %}
+          {% for path, count in popular_pages_all %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td class="page-path">{{ path }}</td>
+            <td>{{ "{:,}".format(count) }}</td>
+            <td>
+              <div class="progress-bar-container">
+                <div class="progress-bar progress-bar-all" style="width: {{ (count / total_visits_all * 100) if total_visits_all > 0 else 0 }}%"></div>
+                <span class="progress-text">{{ "%.1f"|format((count / total_visits_all * 100) if total_visits_all > 0 else 0) }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Crawler Requests (Last 50) -->
+  {% if recent_crawlers %}
+  <div class="analytics-section">
+    <h2>🕐 Recent Crawler Activity (Last 50 Requests)</h2>
+    <div class="crawler-requests-table">
+      <table class="analytics-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Crawler</th>
+            <th>Page Requested</th>
+            <th>Method</th>
+            <th>IP Address</th>
+            <th>User Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for request in recent_crawlers %}
+          <tr>
+            <td class="nowrap">{{ request.request_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>
+              <span class="crawler-badge">{{ request.crawler_name }}</span>
+            </td>
+            <td class="page-path">{{ request.path }}</td>
+            <td><span class="method-badge">{{ request.method }}</span></td>
+            <td>{{ request.ip_address }}</td>
+            <td class="user-agent" title="{{ request.user_agent }}">
+              {{ request.user_agent[:60] }}{% if request.user_agent|length > 60 %}...{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Crawler by Path (Top 20) -->
+  {% if crawler_stats.path_counts %}
+  <div class="analytics-section">
+    <h2>📄 Pages Most Visited by Crawlers (Last 7 Days)</h2>
+    <div class="pages-table">
+      <table class="analytics-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Page Path</th>
+            <th>Crawler Visits</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for path, count in crawler_stats.path_counts %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td class="page-path">{{ path }}</td>
+            <td>{{ "{:,}".format(count) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Quick Actions -->
+  <div class="analytics-section">
+    <h2>🔧 Quick Actions</h2>
+    <div class="quick-actions">
+      <button onclick="location.reload()" class="btn btn-outline">🔄 Refresh</button>
+      <a href="{{ url_for('main.admin_analytics') }}" class="btn btn-outline">📊 UV Analytics</a>
+      <a href="{{ url_for('main.admin_ip_stats') }}" class="btn btn-outline">🌐 IP Stats</a>
+    </div>
+  </div>
+
+</div>
+
+<style>
+/* Base styles are inherited from analytics.html */
+.admin-analytics {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #666;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.nav-link:hover {
+  background: #fff;
+  color: #0d6efd;
+  border-color: #e5e5e5;
+}
+
+.nav-link.active {
+  background: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+
+.analytics-section {
+  margin: 24px 0;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.stat-number {
+  font-size: 2em;
+  font-weight: bold;
+  color: #0d6efd;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  color: #666;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.stat-subtitle {
+  color: #999;
+  font-size: 0.8em;
+  margin-top: 4px;
+}
+
+.timezone-info {
+  background: #fff3cd;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 4px solid #ffc107;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.analytics-table th,
+.analytics-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.analytics-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.analytics-table tr:hover {
+  background: #f8f9fa;
+}
+
+.user-agent {
+  font-family: monospace;
+  font-size: 0.85em;
+  color: #666;
+  cursor: help;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #0d6efd;
+  color: #0d6efd;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-outline:hover {
+  background: #0d6efd;
+  color: #fff;
+}
+
+/* Crawler-specific styles */
+.crawler-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.crawler-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.crawler-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.crawler-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.crawler-name {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.crawler-count {
+  font-size: 12px;
+  color: #666;
+}
+
+.page-path {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #0d6efd;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-bar-container {
+  position: relative;
+  width: 200px;
+  height: 24px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+  transition: width 0.3s ease;
+}
+
+.progress-bar-all {
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
+.progress-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  line-height: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  z-index: 1;
+}
+
+.crawler-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f0f0f0;
+  color: #666;
+}
+
+.method-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #e3f2fd;
+  color: #0d6efd;
+}
+
+.crawler-requests-table {
+  overflow-x: auto;
+}
+
+.pages-table {
+  overflow-x: auto;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .crawler-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  
+  .progress-bar-container {
+    width: 150px;
+  }
+  
+  .page-path {
+    max-width: 200px;
+  }
+  
+  .analytics-table {
+    font-size: 0.9em;
+  }
+  
+  .analytics-table th,
+  .analytics-table td {
+    padding: 6px 8px;
+  }
+}
+</style>
+{% endblock %}
+

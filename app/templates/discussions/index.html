@@ -1,0 +1,1863 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('Discussion Board') }} - Chat-Exchange{% endblock %}
+
+{% block main_class %}discussion-page-wide{% endblock %}
+
+{% block content %}
+<style>
+
+/* CRITICAL: Force main container to use full available width */
+main.discussion-page-wide {
+  max-width: 1400px !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 0 24px !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 1600px) {
+  main.discussion-page-wide {
+    max-width: 1600px !important;
+    padding: 0 32px !important;
+  }
+}
+
+/* Enhanced Layout System - Applied from test_width.html */
+.discussion-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 60px 40px;
+  border-radius: 16px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+  text-align: center;
+}
+
+/* Hero CTA Button Hover Effect */
+.discussion-header a[href*="discussions_new_post"]:hover,
+.discussion-header a[href*="login_page"]:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 36px rgba(102, 126, 234, 0.4) !important;
+}
+
+.discussion-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.discussion-header h1 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+  letter-spacing: -0.5px;
+}
+
+.discussion-header .lead {
+  font-size: 1.3rem;
+  opacity: 0.95;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+  font-weight: 500;
+}
+
+.discussion-header .subtitle {
+  font-size: 1.05rem;
+  opacity: 0.9;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+  font-weight: 400;
+}
+
+/* Main Content Area - Enhanced from test_width.html */
+.discussion-content {
+  min-height: 50vh;
+  padding-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ensure all sections expand to full width */
+.section {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.discussion-header,
+.new-post-section,
+.category-section,
+.post-list,
+.sidebar-widget,
+.sort-section,
+.empty-state {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Enhanced Community stats - Applied from test_width.html */
+.community-stats {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 22px;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.stat-item {
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  text-align: left;
+}
+
+.stat-number {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #667eea;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.stat-description {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* Enhanced New Post Button - Applied from test_width.html */
+.btn-new-post {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 32px;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 17px;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.btn-new-post:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.new-post-section {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
+  border-radius: 16px;
+  padding: 40px 32px;
+  margin-bottom: 32px;
+  text-align: center;
+  border: 2px solid #d0e7ff;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.08);
+  transition: all 0.3s ease;
+}
+
+.new-post-section:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
+}
+
+.new-post-section h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 16px;
+}
+
+.new-post-section p {
+  font-size: 1.05rem;
+  color: #4b5563;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.btn-login {
+  border: 2px solid #667eea;
+  color: #667eea;
+  background: white;
+  border-radius: 50px;
+  padding: 14px 36px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 17px;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.15);
+  cursor: pointer;
+}
+
+.btn-login:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+  border-color: transparent;
+}
+
+/* Enhanced Category Section - Applied from test_width.html */
+.category-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+.category-section h5 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.category-buttons .category-btn {
+  flex: 1 1 auto;
+  min-width: 200px;
+}
+
+.category-btn {
+  display: block;
+  padding: 16px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.category-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: #f9fafb;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+  text-decoration: none;
+}
+
+/* Enhanced responsive design */
+/* Ultra-wide screens - maximize content width */
+@media (min-width: 1600px) {
+  .discussion-content {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media (max-width: 1440px) {
+  .discussion-content {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    padding: 0 20px;
+  }
+  
+  .discussion-content {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .discussion-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .discussion-header {
+    padding: 24px 16px;
+    margin-bottom: 18px;
+  }
+  
+  .discussion-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .discussion-header .lead {
+    font-size: 1rem;
+  }
+  
+  .community-stats {
+    padding: 12px;
+    margin-bottom: 18px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .new-post-section {
+    padding: 16px 12px;
+    margin-bottom: 18px;
+  }
+  
+  .category-section {
+    padding: 12px;
+    margin-bottom: 18px;
+  }
+  
+  .category-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .post-card {
+    padding: 12px;
+  }
+  
+  .post-title {
+    font-size: 1.1rem;
+  }
+  
+  .post-excerpt {
+    font-size: 0.95rem;
+  }
+  
+  .post-meta {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .sidebar-widget {
+    padding: 12px;
+  }
+  
+  .hot-topic-item {
+    padding: 12px 0;
+  }
+  
+  .hot-topic-item:hover {
+    margin: 0 -8px;
+    padding: 12px 8px;
+  }
+  
+  .empty-state {
+    padding: 24px 16px;
+  }
+  
+  .empty-icon {
+    font-size: 3rem;
+  }
+  
+  .empty-state h4 {
+    font-size: 1.3rem;
+  }
+  
+  .empty-state p {
+    font-size: 1rem;
+  }
+  
+  .btn-new-post {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
+  
+  .btn-login {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .discussion-content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .discussion-header {
+    padding: 20px 12px;
+  }
+  
+  .discussion-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .new-post-section {
+    padding: 12px 10px;
+  }
+  
+  .category-section {
+    padding: 10px;
+  }
+  
+  .post-card {
+    padding: 10px;
+  }
+  
+  .post-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .post-title {
+    margin-right: 0;
+    font-size: 1rem;
+  }
+  
+  .post-date {
+    font-size: 0.8rem;
+  }
+  
+  .post-excerpt {
+    font-size: 0.9rem;
+  }
+  
+  .post-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .post-author {
+    margin-right: 0;
+  }
+  
+  .sidebar-widget {
+    padding: 10px;
+  }
+  
+  .hot-topic-item {
+    padding: 10px 0;
+  }
+  
+  .hot-topic-item:hover {
+    margin: 0 -6px;
+    padding: 10px 6px;
+  }
+  
+  .hot-topic-number {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+  
+  .hot-topic-title {
+    font-size: 0.85rem;
+  }
+  
+  .empty-state {
+    padding: 20px 12px;
+  }
+  
+  .empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+  }
+  
+  .empty-state h4 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+  
+  .empty-state p {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+  
+  .highlight {
+    padding: 16px;
+    margin: 16px 0;
+  }
+  
+  .highlight-text {
+    font-size: 1rem;
+  }
+  
+  .highlight-desc {
+    font-size: 0.9rem;
+  }
+  
+  .btn-new-post {
+    padding: 8px 20px;
+    font-size: 13px;
+  }
+  
+  .btn-login {
+    padding: 8px 20px;
+    font-size: 13px;
+  }
+  
+  .sort-buttons {
+    gap: 8px;
+  }
+  
+  .sort-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  
+  nav a.page-link,
+  nav span.page-link {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+.category-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Enhanced post card styling for better content display */
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.post-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  border-color: #667eea;
+  text-decoration: none;
+  color: inherit;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.post-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+  flex: 1;
+  margin-right: 12px;
+  line-height: 1.5;
+}
+
+.post-date {
+  font-size: 0.9rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.post-category {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.post-excerpt {
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.post-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+}
+
+.post-author-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #667eea;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.post-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Enhanced empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 60px 40px;
+  background: linear-gradient(135deg, #fefcfb 0%, #f8fafb 100%);
+  border-radius: 20px;
+  border: 2px dashed #d1d5db;
+  margin: 32px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+.empty-icon {
+  font-size: 4.5rem;
+  margin-bottom: 24px;
+  opacity: 0.9;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+.empty-state h4 {
+  font-size: 1.75rem;
+  color: #111827;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 24px;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.highlight {
+  background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 24px 0;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid #c7d2fe;
+}
+
+.highlight-text {
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.highlight-desc {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.sort-section {
+  margin-bottom: 32px;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  background: white;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.sort-btn:hover {
+  background: #f8f9fa;
+  border-color: #667eea;
+  color: #667eea;
+  text-decoration: none;
+}
+
+.sort-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* Enhanced pagination styling */
+nav {
+  margin-top: 3rem;
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 8px;
+  justify-content: center;
+}
+
+nav li {
+  margin: 0;
+}
+
+nav a.page-link {
+  display: block;
+  padding: 10px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: white;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+nav a.page-link:hover {
+  background: #f8f9fa;
+  border-color: #667eea;
+  text-decoration: none;
+}
+
+nav li.active a.page-link {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+nav li.disabled a.page-link {
+  color: #999;
+  cursor: not-allowed;
+  background: #f8f9fa;
+}
+
+nav span.page-link {
+  display: block;
+  padding: 10px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #f8f9fa;
+  color: #999;
+  font-size: 15px;
+}
+
+/* Enhanced sidebar widget styling */
+.sidebar-widget {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+.sidebar-widget h5 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hot-topic-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid #f3f4f6;
+  transition: all 0.3s;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.hot-topic-item:last-child {
+  border-bottom: none;
+}
+
+.hot-topic-item:hover {
+  background: #f9fafb;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.hot-topic-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.hot-topic-title {
+  flex: 1;
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.hot-topic-views {
+  font-size: 0.75rem;
+  color: #666;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.sidebar-widget a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.sidebar-widget a:hover .hot-topic-title {
+  color: #667eea;
+}
+
+/* Post Items - Match site's feature card style */
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.post-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  border-radius: 12px 0 0 12px;
+  transition: all 0.2s;
+}
+
+.post-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,.08);
+  border-color: #0d6efd;
+  text-decoration: none;
+  transform: translateX(2px);
+}
+
+.post-card:hover::before {
+  background: linear-gradient(180deg, #0d6efd 0%, #0b5ed7 100%);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.8rem;
+}
+
+.post-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #111;
+  flex: 1;
+  margin-right: 1rem;
+  line-height: 1.4;
+}
+
+.post-date {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.post-category {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.post-excerpt {
+  color: #333;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #666;
+  align-items: center;
+}
+
+.post-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.post-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #111;
+}
+
+.post-author-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Empty State */
+.empty-state {
+  background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
+  border: 2px dashed #b3d9ff;
+  border-radius: 16px;
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.empty-state h4 {
+  color: #111;
+  margin: 0 0 12px;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 24px;
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.empty-state .highlight {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 24px;
+  display: inline-block;
+}
+
+.empty-state .highlight-text {
+  font-size: 14px;
+  color: #0d6efd;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.empty-state .highlight-desc {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+/* Sidebar */
+.sidebar-widget {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+.sidebar-widget h5 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.hot-topic-item {
+  display: flex;
+  padding: 12px;
+  background: #f7f7f8;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  align-items: center;
+  gap: 10px;
+  border-left: 3px solid transparent;
+}
+
+.hot-topic-item:hover {
+  background: #e8f4ff;
+  text-decoration: none;
+  border-left-color: #0d6efd;
+  transform: translateX(2px);
+}
+
+.hot-topic-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: #999;
+  min-width: 24px;
+}
+
+.hot-topic-item:nth-child(1) .hot-topic-number { color: #f59e0b; }
+.hot-topic-item:nth-child(2) .hot-topic-number { color: #10b981; }
+.hot-topic-item:nth-child(3) .hot-topic-number { color: #0d6efd; }
+
+.hot-topic-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hot-topic-views {
+  font-size: 13px;
+  color: #666;
+}
+
+.category-info-item {
+  padding: 14px;
+  background: #f7f7f8;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border-left: 4px solid;
+  transition: all 0.2s;
+}
+
+.category-info-item:hover {
+  background: #eee;
+  transform: translateX(2px);
+}
+
+.category-info-name {
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.category-info-desc {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+</style>
+
+<!-- Main Content -->
+<div class="discussion-content">
+    
+    <!-- Modern Hero Section with Integrated CTA -->
+    <div class="section" style="margin: 24px 0;">
+      <div class="discussion-header" style="padding: 40px 32px; margin-bottom: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 12px 40px rgba(102, 126, 234, 0.25);">
+          <!-- Main Content -->
+          <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 12px; color: white; letter-spacing: -0.5px;">
+              🌏 {{ t('Language Learning Community') }}
+            </h1>
+            <p style="font-size: 1.05rem; margin-bottom: 6px; color: rgba(255, 255, 255, 0.95); font-weight: 500;">
+              {{ t('Share ideas, exchange experiences, and grow together') }}
+            </p>
+            <p style="font-size: 0.95rem; margin-bottom: 32px; color: rgba(255, 255, 255, 0.85); font-weight: 400;">
+              {{ t('A vibrant space where language learners connect and support each other') }}
+            </p>
+            
+            <!-- Call-to-Action Card -->
+            <div style="background: white; border-radius: 16px; padding: 24px 32px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12); max-width: 550px; margin: 0 auto;">
+              {% if current_user.is_authenticated %}
+                <div style="margin-bottom: 24px;">
+                  <span style="display: inline-block; padding: 6px 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #92400e; border-radius: 50px; font-size: 0.8rem; font-weight: 700; margin-bottom: 12px;">
+                    ✨ Ready to Share?
+                  </span>
+                  <h3 style="font-size: 1.25rem; margin-bottom: 6px; color: #111827; font-weight: 700;">{{ t('Share Your Story') }}</h3>
+                  <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 0;">{{ t('Have a tip, question, or experience? Share it with our community!') }}</p>
+                </div>
+                <a href="{{ url_for('main.discussions_new_post') }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 32px; font-size: 1rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50px; text-decoration: none; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25); transition: all 0.3s ease;">
+                  <i class="bi bi-pencil-square"></i> {{ t('Start a Discussion') }}
+                </a>
+              {% else %}
+                <div style="margin-bottom: 24px;">
+                  <span style="display: inline-block; padding: 6px 16px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1e3a8a; border-radius: 50px; font-size: 0.8rem; font-weight: 700; margin-bottom: 12px;">
+                    👋 Welcome!
+                  </span>
+                  <h3 style="font-size: 1.25rem; margin-bottom: 6px; color: #111827; font-weight: 700;">{{ t('Join Our Community') }}</h3>
+                  <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 0;">{{ t('Sign in to start discussions and connect with fellow learners') }}</p>
+                </div>
+                <a href="{{ url_for('auth.login_page') }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 32px; font-size: 1rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50px; text-decoration: none; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25); transition: all 0.3s ease; cursor: pointer;">
+                  <i class="bi bi-box-arrow-in-right"></i> {{ t('Sign In') }}
+                </a>
+              {% endif %}
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="section" style="margin: 16px 0;">
+      <div class="category-section" style="padding: 20px; margin-bottom: 22px;">
+        <h5 style="font-size: 1.9rem; margin-bottom: 20px;">
+          <i class="bi bi-grid-3x3-gap-fill" style="color: #0d6efd;"></i> {{ t('Categories') }}
+        </h5>
+        <div class="category-buttons" style="gap: 12px;">
+          <a href="{{ url_for('main.discussions_index') }}" 
+             class="category-btn {% if not current_category %}active{% endif %}" style="padding: 10px 18px; font-size: 15px;">
+            {{ t('All') }}
+          </a>
+          {% for category in categories %}
+          <a href="{{ url_for('main.discussions_index', category=category.id) }}" 
+             class="category-btn {% if current_category == category.id %}active{% endif %}" style="padding: 10px 18px; font-size: 15px;">
+            {{ category.icon }} {% if current_lang == 'zh' %}{{ category.name }}{% else %}{{ category.name_en }}{% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sort Options -->
+    <div class="section" style="margin: 22px 0;">
+      <div class="sort-section" style="margin-bottom: 22px;">
+        <div class="sort-buttons" style="gap: 12px;">
+          <a href="{{ url_for('main.discussions_index', category=current_category, sort='latest') }}" 
+             class="sort-btn {% if current_sort == 'latest' %}active{% endif %}" style="padding: 10px 18px; font-size: 15px;">
+            <i class="bi bi-clock-fill"></i> {{ t('Latest') }}
+          </a>
+          <a href="{{ url_for('main.discussions_index', category=current_category, sort='hot') }}" 
+             class="sort-btn {% if current_sort == 'hot' %}active{% endif %}" style="padding: 10px 18px; font-size: 15px;">
+            <i class="bi bi-fire"></i> {{ t('Hot') }}
+          </a>
+          <a href="{{ url_for('main.discussions_index', category=current_category, sort='replies') }}" 
+             class="sort-btn {% if current_sort == 'replies' %}active{% endif %}" style="padding: 10px 18px; font-size: 15px;">
+            <i class="bi bi-chat-fill"></i> {{ t('Most Replies') }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts Section -->
+    <div class="section" style="margin: 22px 0;">
+      <!-- Posts -->
+      {% if posts %}
+      <div class="post-list" style="gap: 14px;">
+        {% for post in posts %}
+        <a href="{{ url_for('main.discussions_post_detail', post_id=post.id) }}" class="post-card" style="padding: 20px; border-radius: 12px;">
+          <div class="post-header" style="margin-bottom: 12px;">
+            <div class="post-title" style="font-size: 1.2rem; font-weight: 600;">
+              {% if post.is_pinned %}
+              <i class="bi bi-pin-angle-fill" style="color: #f59e0b;"></i>
+              {% endif %}
+              {{ post.title }}
+            </div>
+            <div class="post-date" style="font-size: 0.9rem;">{{ post.created_at.strftime('%m-%d %H:%M') }}</div>
+          </div>
+          
+          <div class="post-category" style="background-color: {{ post.category.color }}; padding: 5px 10px; font-size: 0.85rem; margin-bottom: 12px;">
+            {{ post.category.icon }} {{ post.category.name }}
+          </div>
+          
+          <div class="post-excerpt" style="font-size: 1rem; line-height: 1.6; margin-bottom: 14px;">{{ post.content[:150] }}...</div>
+          
+          <div class="post-meta" style="gap: 16px;">
+            <span class="post-author">
+              <span class="post-author-avatar" style="width: 32px; height: 32px; font-size: 14px;">{{ post.author.name[0].upper() }}</span>
+              <span style="font-size: 0.95rem;">{{ post.author.name }}</span>
+            </span>
+            <span class="post-meta-item" style="font-size: 0.9rem;">
+              <i class="bi bi-eye"></i> <span>{{ post.views }}</span>
+            </span>
+            <span class="post-meta-item" style="font-size: 0.9rem;">
+              <i class="bi bi-chat-dots"></i> <span>{{ post.replies_count }}</span>
+            </span>
+            <span class="post-meta-item" style="font-size: 0.9rem;">
+              ❤️ <span>{{ post.likes_count }}</span>
+            </span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if pagination.pages > 1 %}
+      <nav aria-label="Page navigation" style="margin-top: 3rem;">
+        <ul class="pagination justify-content-center" style="gap: 8px;">
+          {% if pagination.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('main.discussions_index', page=pagination.prev_num, category=current_category, sort=current_sort) }}" style="padding: 10px 16px; font-size: 15px;">
+              {{ t('Previous') }}
+            </a>
+          </li>
+          {% endif %}
+          
+          {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+              <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('main.discussions_index', page=page_num, category=current_category, sort=current_sort) }}" style="padding: 10px 16px; font-size: 15px;">
+                  {{ page_num }}
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link" style="padding: 10px 16px;">...</span></li>
+            {% endif %}
+          {% endfor %}
+          
+          {% if pagination.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('main.discussions_index', page=pagination.next_num, category=current_category, sort=current_sort) }}" style="padding: 10px 16px; font-size: 15px;">
+              {{ t('Next') }}
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+      {% else %}
+    <!-- Empty State -->
+    <div class="empty-state" style="padding: 40px 32px; margin: 22px 0;">
+      <div class="empty-icon" style="font-size: 4rem; margin-bottom: 24px;">🌱</div>
+      <h4 style="font-size: 1.6rem; margin-bottom: 16px;">{{ t('Start Something Amazing!') }}</h4>
+      <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 24px;">{{ t('This community is waiting for your voice. Share your insights, ask questions, or start a conversation about language learning.') }}</p>
+      <div class="highlight" style="margin: 24px auto; max-width: 600px;">
+        <div class="highlight-text" style="font-size: 1.1rem; margin-bottom: 8px;">{{ t('What can you share?') }}</div>
+        <div class="highlight-desc" style="font-size: 1rem;">{{ t('Learning tips • Culture insights • Questions • Resources • Success stories') }}</div>
+      </div>
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('main.discussions_new_post') }}" class="btn-new-post" style="margin-top: 24px; padding: 14px 32px; font-size: 17px;">
+        <i class="bi bi-pencil-square"></i> {{ t('Start the Conversation') }}
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+    </div>
+
+    <!-- Hot Topics Section -->
+    <div class="section" style="margin: 22px 0;">
+      {% if hot_posts %}
+      <div class="sidebar-widget" style="padding: 20px; border-radius: 12px;">
+        <h5 style="font-size: 1.4rem; margin-bottom: 20px;">
+          <i class="bi bi-fire" style="color: #f59e0b;"></i> {{ t('Hot Topics') }}
+        </h5>
+        {% for post in hot_posts %}
+        <a href="{{ url_for('main.discussions_post_detail', post_id=post.id) }}" class="hot-topic-item" style="padding: 14px 0; gap: 12px;">
+          <div class="hot-topic-number" style="width: 28px; height: 28px; font-size: 13px;">{{ loop.index }}</div>
+          <div style="flex: 1;">
+            <div class="hot-topic-title" style="font-size: 0.95rem; line-height: 1.4;">{{ post.title }}</div>
+            <div class="hot-topic-views" style="font-size: 0.8rem;">
+              <i class="bi bi-eye"></i> {{ post.views }}
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<!-- Loading Indicator -->
+<div id="loading-indicator" class="loading-indicator" style="display: none;">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">{{ t('Loading...') }}</div>
+</div>
+
+<!-- AJAX Error Message -->
+<div id="ajax-error" class="ajax-error" style="display: none;">
+  <div class="error-icon">⚠️</div>
+  <div class="error-text">{{ t('Something went wrong. Please try again.') }}</div>
+  <button onclick="location.reload()" class="error-retry-btn">{{ t('Retry') }}</button>
+</div>
+
+<script>
+// Global state management
+const DiscussionManager = {
+    currentPage: 1,
+    currentCategory: new URLSearchParams(window.location.search).get('category'),
+    currentSort: new URLSearchParams(window.location.search).get('sort') || 'latest',
+    isLoading: false,
+    hasMore: true,
+    
+    init() {
+        this.bindEvents();
+        this.updateURL();
+        this.initializePage();
+    },
+    
+    bindEvents() {
+        // Category buttons
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const category = btn.getAttribute('href').includes('category=') ? 
+                    new URLSearchParams(new URL(btn.href).search).get('category') : null;
+                this.changeCategory(category);
+            });
+        });
+        
+        // Sort buttons
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sort = new URLSearchParams(new URL(btn.href).search).get('sort') || 'latest';
+                this.changeSort(sort);
+            });
+        });
+        
+        // Pagination
+        document.querySelectorAll('.page-link').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = new URLSearchParams(new URL(btn.href).search).get('page');
+                if (page) this.changePage(parseInt(page));
+            });
+        });
+        
+        // Post cards
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.post-card')) {
+                e.preventDefault();
+                const postCard = e.target.closest('.post-card');
+                const postId = postCard.getAttribute('href').match(/\/post\/(\d+)/)[1];
+                this.openPostDetail(postId);
+            }
+        });
+    },
+    
+    changeCategory(category) {
+        if (this.currentCategory === category) return;
+        this.currentCategory = category;
+        this.currentPage = 1;
+        this.updateContent();
+    },
+    
+    changeSort(sort) {
+        if (this.currentSort === sort) return;
+        this.currentSort = sort;
+        this.currentPage = 1;
+        this.updateContent();
+    },
+    
+    changePage(page) {
+        if (this.currentPage === page) return;
+        this.currentPage = page;
+        this.updateContent();
+    },
+    
+    async updateContent() {
+        if (this.isLoading) return;
+        
+        this.showLoading();
+        
+        try {
+            const params = new URLSearchParams();
+            if (this.currentCategory) params.append('category', this.currentCategory);
+            if (this.currentSort) params.append('sort', this.currentSort);
+            if (this.currentPage > 1) params.append('page', this.currentPage);
+            
+            const response = await fetch(`?${params.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+            this.renderContent(data);
+            this.updateURL();
+            this.updateActiveButtons();
+            
+        } catch (error) {
+            console.error('Error fetching content:', error);
+            this.showError();
+        } finally {
+            this.hideLoading();
+        }
+    },
+    
+    renderContent(data) {
+        // Update posts
+        const postList = document.querySelector('.post-list');
+        if (postList) {
+            if (data.posts && data.posts.length > 0) {
+                postList.innerHTML = data.posts.map(post => this.createPostHTML(post)).join('');
+            } else {
+                postList.innerHTML = this.getEmptyStateHTML();
+            }
+        }
+        
+        // Update pagination
+        this.updatePagination(data.pagination);
+        
+        // Update hot topics
+        const hotTopics = document.querySelector('.sidebar-widget');
+        if (hotTopics && data.hot_posts) {
+            hotTopics.innerHTML = this.createHotTopicsHTML(data.hot_posts);
+        }
+    },
+    
+    createPostHTML(post) {
+        return `
+            <a href="/discussions/post/${post.id}" class="post-card" data-post-id="${post.id}">
+                <div class="post-header">
+                    <div class="post-title">
+                        ${post.is_pinned ? '<i class="bi bi-pin-angle-fill" style="color: #f59e0b;"></i>' : ''}
+                        ${post.title}
+                    </div>
+                    <div class="post-date">${post.created_at}</div>
+                </div>
+                
+                <div class="post-category" style="background-color: ${post.category.color}">
+                    ${post.category.icon} ${post.category.name}
+                </div>
+                
+                <div class="post-excerpt">${post.content.substring(0, 120)}...</div>
+                
+                <div class="post-meta">
+                    <span class="post-author">
+                        <span class="post-author-avatar">${post.author.name.charAt(0).toUpperCase()}</span>
+                        <span>${post.author.name}</span>
+                    </span>
+                    <span class="post-meta-item">
+                        <i class="bi bi-eye"></i> <span>${post.views}</span>
+                    </span>
+                    <span class="post-meta-item">
+                        <i class="bi bi-chat-dots"></i> <span>${post.reply_count}</span>
+                    </span>
+                    <span class="post-meta-item">
+                        ❤️ <span>${post.likes_count}</span>
+                    </span>
+                </div>
+            </a>
+        `;
+    },
+    
+    updatePagination(pagination) {
+        const paginationContainer = document.querySelector('nav[aria-label="Page navigation"]');
+        if (!paginationContainer) return;
+        
+        if (pagination && pagination.pages > 1) {
+            paginationContainer.innerHTML = this.createPaginationHTML(pagination);
+        } else {
+            paginationContainer.innerHTML = '';
+        }
+    },
+    
+    createPaginationHTML(pagination) {
+        let html = '<ul class="pagination justify-content-center">';
+        
+        if (pagination.has_prev) {
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="${pagination.prev_num}">
+                        {{ t('Previous') }}
+                    </a>
+                </li>
+            `;
+        }
+        
+        if (pagination.pages) {
+            for (let i = 1; i <= pagination.pages; i++) {
+                const active = i === pagination.page ? 'active' : '';
+                html += `
+                    <li class="page-item ${active}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `;
+            }
+        }
+        
+        if (pagination.has_next) {
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="${pagination.next_num}">
+                        {{ t('Next') }}
+                    </a>
+                </li>
+            `;
+        }
+        
+        html += '</ul>';
+        return html;
+    },
+    
+    createHotTopicsHTML(hotPosts) {
+        return `
+            <h5>
+                <i class="bi bi-fire" style="color: #f59e0b;"></i> {{ t('Hot Topics') }}
+            </h5>
+            ${hotPosts.map((post, index) => `
+                <a href="/discussions/post/${post.id}" class="hot-topic-item" data-post-id="${post.id}">
+                    <div class="hot-topic-number">${index + 1}</div>
+                    <div style="flex: 1;">
+                        <div class="hot-topic-title">${post.title}</div>
+                        <div class="hot-topic-views">
+                            <i class="bi bi-eye"></i> ${post.views}
+                        </div>
+                    </div>
+                </a>
+            `).join('')}
+        `;
+    },
+    
+    getEmptyStateHTML() {
+        return `
+            <div class="empty-state">
+                <div class="empty-icon">🌱</div>
+                <h4>{{ t('Start Something Amazing!') }}</h4>
+                <p>{{ t('This community is waiting for your voice. Share your insights, ask questions, or start a conversation about language learning.') }}</p>
+                <div class="highlight">
+                    <div class="highlight-text">{{ t('What can you share?') }}</div>
+                    <div class="highlight-desc">{{ t('Learning tips • Culture insights • Questions • Resources • Success stories') }}</div>
+                </div>
+                ${this.isLoggedIn ? `
+                    <a href="/discussions/new" class="btn-new-post" style="margin-top: 20px;">
+                        <i class="bi bi-pencil-square"></i> {{ t('Start the Conversation') }}
+                    </a>
+                ` : ''}
+            </div>
+        `;
+    },
+    
+    updateActiveButtons() {
+        // Update category buttons
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('active');
+            const category = btn.getAttribute('href').includes('category=') ? 
+                new URLSearchParams(new URL(btn.href).search).get('category') : null;
+            if (category === this.currentCategory || (!category && !this.currentCategory)) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Update sort buttons
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.classList.remove('active');
+            const sort = new URLSearchParams(new URL(btn.href).search).get('sort') || 'latest';
+            if (sort === this.currentSort) {
+                btn.classList.add('active');
+            }
+        });
+    },
+    
+    updateURL() {
+        const params = new URLSearchParams();
+        if (this.currentCategory) params.append('category', this.currentCategory);
+        if (this.currentSort !== 'latest') params.append('sort', this.currentSort);
+        if (this.currentPage > 1) params.append('page', this.currentPage);
+        
+        const newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        window.history.pushState({}, '', newURL);
+    },
+    
+    openPostDetail(postId) {
+        window.location.href = `/discussions/post/${postId}`;
+    },
+    
+    showLoading() {
+        this.isLoading = true;
+        document.getElementById('loading-indicator').style.display = 'flex';
+        document.getElementById('ajax-error').style.display = 'none';
+    },
+    
+    hideLoading() {
+        this.isLoading = false;
+        document.getElementById('loading-indicator').style.display = 'none';
+    },
+    
+    showError() {
+        this.hideLoading();
+        document.getElementById('ajax-error').style.display = 'flex';
+    },
+    
+    initializePage() {
+        this.isLoggedIn = document.querySelector('.btn-new-post[href*="new"]') !== null;
+    }
+};
+
+// Smooth scrolling for page elements
+function smoothScrollTo(element) {
+    if (element) {
+        element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+// Enhanced hover effects for interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize discussion manager
+    DiscussionManager.init();
+    
+    // Add hover effects for cards
+    document.querySelectorAll('.post-card, .hot-topic-item').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(4px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+    
+    // Enhanced button interactions
+    document.querySelectorAll('.btn-new-post, .btn-login, .category-btn, .sort-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Keyboard navigation support
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'r':
+                    e.preventDefault();
+                    location.reload();
+                    break;
+                case 'k':
+                    e.preventDefault();
+                    document.querySelector('.search-input')?.focus();
+                    break;
+            }
+        }
+    });
+    
+    // Auto-refresh hot topics every 30 seconds
+    setInterval(() => {
+        if (!DiscussionManager.isLoading) {
+            // Could implement hot topics refresh here
+        }
+    }, 30000);
+});
+
+// Error handling for failed requests
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+    DiscussionManager.showError();
+});
+
+// Add loading indicator styles
+const style = document.createElement('style');
+style.textContent = `
+    .loading-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .ajax-error {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        text-align: center;
+        z-index: 9999;
+        min-width: 300px;
+    }
+    
+    .error-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+    
+    .error-text {
+        color: #666;
+        margin-bottom: 20px;
+    }
+    
+    .error-retry-btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    
+    .error-retry-btn:hover {
+        background: #5a67d8;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

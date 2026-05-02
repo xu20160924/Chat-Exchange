@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('Create New Post') }} - Chat-Exchange{% endblock %}
+
+{% block main_class %}discussion-page-wide{% endblock %}
+
+{% block content %}
+<style>
+/* ULTRA PRIORITY: Force main container width */
+body main.discussion-page-wide {
+  max-width: 1400px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 1600px) {
+  body main.discussion-page-wide {
+    max-width: 1600px !important;
+    padding: 0 32px !important;
+  }
+}
+
+/* NUCLEAR OPTION: Override everything in new-post-page */
+body main .new-post-page,
+body main .new-post-page *:not(i):not(span.required):not(.bi) {
+    box-sizing: border-box !important;
+}
+
+body main .new-post-page,
+body main .new-post-page .container-fluid,
+body main .new-post-page .row,
+body main .new-post-page .col-lg-12,
+body main .new-post-page .page-header,
+body main .new-post-page .form-card,
+body main .new-post-page form,
+body main .new-post-page .mb-3,
+body main .new-post-page .form-select,
+body main .new-post-page .form-control,
+body main .new-post-page input,
+body main .new-post-page textarea,
+body main .new-post-page select {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Remove padding from containers, add back only to form-card */
+body main .new-post-page,
+body main .new-post-page .container-fluid,
+body main .new-post-page .row,
+body main .new-post-page .col-lg-12 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Re-apply proper padding only to form-card */
+body main .new-post-page .form-card {
+    padding: 40px !important;
+}
+
+/* Ensure guidelines container is also full width */
+body main .new-post-page .guidelines-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Navigation */
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.breadcrumb-nav a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumb-nav a:hover {
+  color: #ffffff;
+}
+
+.breadcrumb-nav span {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.breadcrumb-nav .active {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Header */
+.header-section {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #ffffff;
+}
+
+.header-section h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.header-section p {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Card Container */
+.card-container {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+.card-body {
+  padding: 3rem;
+  max-width: 100%;
+}
+
+/* Form Styles */
+.form-field {
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.mb-3 {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.form-field label {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+}
+
+.form-field label .required {
+  color: #ef4444;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 1rem;
+  font-size: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  transition: all 0.2s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.form-field textarea {
+  min-height: 600px;
+  resize: vertical;
+  line-height: 1.8;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-field small {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 2.5rem;
+  padding-top: 2.5rem;
+  border-top: 2px solid #f1f5f9;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  border: none;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  color: #ffffff;
+}
+
+.btn-cancel {
+  background: #ffffff;
+  color: #64748b;
+  border: 2px solid #e2e8f0;
+}
+
+.btn-cancel:hover {
+  background: #f8fafc;
+  border-color: #667eea;
+  color: #667eea;
+  text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .post-creation-page {
+    padding: 2rem 1rem;
+  }
+  
+  .header-section h1 {
+    font-size: 2rem;
+  }
+  
+  .header-section p {
+    font-size: 1rem;
+  }
+  
+  .card-body {
+    padding: 2rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .form-field textarea {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-section h1 {
+    font-size: 1.75rem;
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  .form-field textarea {
+    min-height: 250px;
+  }
+}
+.page-header{margin-bottom:32px;width:100%;max-width:100%;padding:0}
+.page-header h1{font-size:36px;font-weight:800;margin:0 0 12px;color:#111827}
+.page-header .subtitle{font-size:17px;color:#6b7280;line-height:1.6}
+.guidelines-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin-top:32px;width:100%;max-width:100%}
+.form-card{background:#fff;border:2px solid #e5e7eb;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.08);width:100%;max-width:100%;padding:40px;box-sizing:border-box}
+.form-label{display:block;font-weight:700;margin-bottom:10px;color:#111827;font-size:15px}
+.required{color:#ef4444;margin-left:2px}
+.form-select,.form-control{width:100% !important;max-width:100% !important;padding:16px;border:2px solid #e5e7eb;border-radius:12px;background:#fff;font-size:16px;box-sizing:border-box;transition:all 0.2s}
+.form-select:focus,.form-control:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 4px rgba(102,126,234,.12)}
+.form-text{font-size:13px;color:#666;margin-top:6px}
+.mb-3{width:100% !important;max-width:100% !important;margin-bottom:24px}
+.form-actions{display:flex;justify-content:space-between;gap:16px;margin-top:32px;padding-top:32px;border-top:2px solid #f3f4f6}
+.btn-primary-custom{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:12px;padding:16px 32px;font-weight:700;display:inline-flex;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(102,126,234,.3);cursor:pointer;text-decoration:none;font-size:16px;transition:all 0.3s}
+.btn-primary-custom:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 12px 32px rgba(102,126,234,.4)}
+.btn-secondary-custom{background:#fff;color:#667eea;border:2px solid #667eea;border-radius:12px;padding:16px 32px;font-weight:700;display:inline-flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;font-size:16px;transition:all 0.3s;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.btn-secondary-custom:hover{background:#f9fafb;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.sidebar-card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:14px}
+.guidelines-sidebar ul{margin:10px 0 0 18px}
+.guidelines-sidebar li{margin:6px 0}
+.tips-section h6{margin:10px 0 4px;font-weight:700}
+.new-post-page{width:100%;max-width:100%;padding:0;margin:0;box-sizing:border-box}
+@media (max-width:768px){.new-post-page .row{grid-template-columns:1fr}.btn-primary-custom,.btn-secondary-custom{width:100%;justify-content:center}}
+</style>
+
+<div class="new-post-page" style="width: 100%; max-width: 100%; padding: 0; margin: 0;">
+  
+  <!-- Page Header -->
+  <div class="page-header" style="width: 100%; max-width: 100%; margin-bottom: 32px;">
+    <h1 style="font-size: 36px; font-weight: 800; margin: 0 0 12px; color: #111827;">✍️ {{ t('Share Your Thoughts') }}</h1>
+    <p class="subtitle" style="font-size: 17px; color: #6b7280; line-height: 1.6;">{{ t('Start a conversation, ask a question, or share your experience with the community') }}</p>
+  </div>
+
+  <div class="form-card" style="background: #fff; border: 2px solid #e5e7eb; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 40px; width: 100%; max-width: 100%; box-sizing: border-box;">
+    <form method="POST" action="{{ url_for('main.discussions_create_post') }}" style="width: 100%; max-width: 100%;">
+          <!-- Category Selection -->
+          <div class="mb-3" style="width: 100%; max-width: 100%; margin-bottom: 24px;">
+            <label for="category_id" class="form-label">
+              <i class="bi bi-folder"></i>
+              {{ t('Category') }} <span class="required">*</span>
+            </label>
+            <select class="form-select" id="category_id" name="category_id" required style="width: 100%; max-width: 100%; box-sizing: border-box;">
+              <option value="">{{ t('Select a category') }}</option>
+              {% for category in categories %}
+              <option value="{{ category.id }}">{{ category.icon }} {% if current_lang == 'zh' %}{{ category.name }}{% else %}{{ category.name_en }}{% endif %}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">
+              <i class="bi bi-info-circle"></i>
+              {{ t('Choose the most appropriate category for your post') }}
+            </div>
+          </div>
+
+          <!-- Title -->
+          <div class="mb-3" style="width: 100%; max-width: 100%; margin-bottom: 24px;">
+            <label for="title" class="form-label">
+              <i class="bi bi-pencil"></i>
+              {{ t('Title') }} <span class="required">*</span>
+            </label>
+            <input type="text" 
+                   class="form-control" 
+                   id="title" 
+                   name="title" 
+                   maxlength="255" 
+                   required
+                   placeholder="{{ t('Enter a clear and descriptive title') }}"
+                   style="width: 100%; max-width: 100%; box-sizing: border-box;">
+            <div class="form-text">
+              <i class="bi bi-lightbulb"></i>
+              {{ t('A good title helps others understand your topic quickly') }}
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="mb-3" style="width: 100%; max-width: 100%; margin-bottom: 24px;">
+            <label for="content" class="form-label">
+              <i class="bi bi-file-text"></i>
+              {{ t('Content') }} <span class="required">*</span>
+            </label>
+            <textarea class="form-control" 
+                      id="content" 
+                      name="content" 
+                      rows="20" 
+                      required
+                      placeholder="{{ t('Share your thoughts, questions, or experiences in detail...') }}"
+                      style="width: 100%; max-width: 100%; box-sizing: border-box;"></textarea>
+            <div class="form-text">
+              <i class="bi bi-chat-dots"></i>
+              {{ t('The more details you provide, the better responses you will receive') }}
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <a href="{{ url_for('main.discussions_index') }}" class="btn-secondary-custom">
+              <i class="bi bi-arrow-left"></i>
+              <span>{{ t('Back') }}</span>
+            </a>
+            <button type="submit" class="btn-primary-custom">
+              <span>{{ t('Publish Post') }}</span>
+              <i class="bi bi-send-fill"></i>
+            </button>
+          </div>
+        </form>
+  </div>
+  
+  <div class="guidelines-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-top: 32px; width: 100%; max-width: 100%;">
+    <div class="sidebar-card guidelines-sidebar">
+      <h5><i class="bi bi-lightbulb-fill"></i> {{ t('Community Guidelines') }}</h5>
+      <ul>
+        <li>{{ t('Be respectful and considerate to others') }}</li>
+        <li>{{ t('Stay on topic and choose the right category') }}</li>
+        <li>{{ t('Provide clear and detailed information') }}</li>
+        <li>{{ t('Search before posting to avoid duplicates') }}</li>
+        <li>{{ t('Use proper language and formatting') }}</li>
+      </ul>
+    </div>
+    <div class="sidebar-card tips-sidebar">
+      <h5><i class="bi bi-star-fill" style="color: #f59e0b;"></i> {{ t('Tips for Great Posts') }}</h5>
+      <div class="tips-section">
+        <h6>💬 {{ t('For Questions') }}</h6>
+        <ul>
+          <li>{{ t('Explain what you have tried already') }}</li>
+          <li>{{ t('Be specific about your problem') }}</li>
+          <li>{{ t('Provide examples when possible') }}</li>
+        </ul>
+      </div>
+      <div class="tips-section">
+        <h6>💡 {{ t('For Sharing') }}</h6>
+        <ul>
+          <li>{{ t('Share practical tips and examples') }}</li>
+          <li>{{ t('Explain why it worked for you') }}</li>
+          <li>{{ t('Be open to different perspectives') }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Auto-save draft to localStorage
+const form = document.querySelector('form');
+const titleInput = document.getElementById('title');
+const contentInput = document.getElementById('content');
+const categorySelect = document.getElementById('category_id');
+
+// Load saved draft
+const savedDraft = localStorage.getItem('discussion_draft');
+if (savedDraft) {
+  try {
+    const draft = JSON.parse(savedDraft);
+    const message = '{{ current_lang }}' === 'zh' 
+      ? '检测到草稿，是否恢复？' 
+      : 'You have a saved draft. Would you like to restore it?';
+    if (confirm(message)) {
+      if (titleInput) titleInput.value = draft.title || '';
+      if (contentInput) contentInput.value = draft.content || '';
+      if (categorySelect) categorySelect.value = draft.category_id || '';
+    }
+  } catch (e) {
+    console.error('Failed to load draft:', e);
+    // Clear corrupted draft
+    localStorage.removeItem('discussion_draft');
+  }
+}
+
+// Save draft on input
+let saveTimeout;
+function saveDraft() {
+  if (!titleInput || !contentInput || !categorySelect) return;
+  
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    try {
+      const draft = {
+        title: titleInput.value,
+        content: contentInput.value,
+        category_id: categorySelect.value
+      };
+      localStorage.setItem('discussion_draft', JSON.stringify(draft));
+    } catch (e) {
+      console.error('Failed to save draft:', e);
+    }
+  }, 1000);
+}
+
+if (titleInput) titleInput.addEventListener('input', saveDraft);
+if (contentInput) contentInput.addEventListener('input', saveDraft);
+if (categorySelect) categorySelect.addEventListener('change', saveDraft);
+
+// Clear draft on submit
+if (form) {
+  form.addEventListener('submit', () => {
+    try {
+      localStorage.removeItem('discussion_draft');
+    } catch (e) {
+      console.error('Failed to clear draft:', e);
+    }
+  });
+}
+</script>
+{% endblock %}

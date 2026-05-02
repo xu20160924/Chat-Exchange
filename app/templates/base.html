@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="{{ current_lang }}" data-lang="{{ current_lang }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- SEO Meta Tags -->
+    <title>{% block title %}Chat-Exchange - Free Language Exchange Platform | Find Language Partners Online{% endblock %}</title>
+    <meta name="description" content="{% block description %}Free online language exchange platform. Find language partners, practice languages through chat conversation, and improve your skills with native speakers worldwide. Join thousands of language learners today.{% endblock %}">
+    <meta name="keywords" content="language exchange, chat exchange, language partner, language learner, practice language online, find language partner, free conversation partner, multilingual chat, language learning, speak with natives, free language exchange, online language practice, conversation practice, language partner finder, free language learner community">
+    <meta name="author" content="Chat-Exchange">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://chat-exchange.online{% block canonical %}{{ request.path }}{% endblock %}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://chat-exchange.online{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}Chat-Exchange - Free Language Exchange Platform{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Find language partners and practice languages online. Free conversation with native speakers worldwide. Join language learners today!{% endblock %}">
+    <meta property="og:image" content="https://chat-exchange.online{{ url_for('static', filename='og-image.jpg') }}">
+    <meta property="og:site_name" content="Chat-Exchange">
+    <meta property="og:locale" content="{{ current_lang }}_{{ current_lang.upper() }}">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://chat-exchange.online{{ request.path }}">
+    <meta name="twitter:title" content="{% block twitter_title %}Chat-Exchange - Language Exchange Online{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Connect with language learners worldwide. Free conversation practice with language partners through chat.{% endblock %}">
+    <meta name="twitter:image" content="https://chat-exchange.online{{ url_for('static', filename='og-image.jpg') }}">
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Chat-Exchange",
+      "url": "https://chat-exchange.online",
+      "description": "Free online language exchange platform for finding language partners and practicing languages through conversation with language learners worldwide",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "1250",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://chat-exchange.online/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon-180x180.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='android-chrome-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='android-chrome-512x512.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- Google AdSense - Temporarily Hidden -->
+    <!--
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8955117503238507"
+         crossorigin="anonymous"></script>
+    -->
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a href="{{ url_for('main.index') }}" class="logo">Chat-Exchange</a>
+        <nav>
+          <a href="{{ url_for('main.search') }}">{{ t('Search') }}</a>
+          {% if not hide_discussion_entry %}
+          <a href="{{ url_for('main.discussions_index') }}">{{ t('Discussion Board') }}</a>
+          {% endif %}
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.edit_profile_page') }}">{{ t('My Profile') }}</a>
+            <a href="{{ url_for('msg.inbox') }}">{{ t('Messages') }}</a>
+            <form action="{{ url_for('auth.logout_submit') }}" method="post" style="display:inline">
+              <button type="submit" class="linklike">{{ t('Sign out') }}</button>
+            </form>
+          {% else %}
+            <a href="{{ url_for('auth.login_page') }}">{{ t('Sign in') }}</a>
+            <a href="{{ url_for('auth.register_page') }}" class="btn">{{ t('Sign up') }}</a>
+          {% endif %}
+          <select onchange="location.href='/lang/'+this.value" style="margin-left:12px;padding:6px;border-radius:6px;border:1px solid #dadce0;">
+            {% for code, label in langs %}
+            <option value="{{ code }}" {% if code == current_lang %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Banner Ad - Temporarily Hidden -->
+    <!--
+    <div class="container">
+      <div class="ad-container">
+        <ins class="adsbygoogle ad-banner"
+             style="display:block"
+             data-ad-client="ca-pub-8955117503238507"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+      </div>
+    </div>
+    -->
+
+    <!-- IP:port access is now blocked - users are redirected to domain automatically -->
+
+    <!-- 通知顯示區域 (Show to all users, not just authenticated) - OUTSIDE container for full width -->
+    <div id="notifications-container" class="notifications-container">
+      <!-- 通知將通過 JavaScript 動態加載 -->
+    </div>
+
+    <main class="{% block main_class %}container{% endblock %}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes" id="flash-messages">
+            {% for category, message in messages %}
+              <li class="flash {{ category }}">
+                <span class="flash-message">{{ message }}</span>
+                <button class="flash-close" onclick="this.parentElement.remove()" title="Close">×</button>
+              </li>
+            {% endfor %}
+          </ul>
+          <script>
+            // Auto-dismiss flash messages after 4 seconds
+            setTimeout(function() {
+              const flashMessages = document.getElementById('flash-messages');
+              if (flashMessages) {
+                flashMessages.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                flashMessages.style.opacity = '0';
+                flashMessages.style.transform = 'translateY(-20px)';
+                setTimeout(function() {
+                  if (flashMessages.parentNode) {
+                    flashMessages.remove();
+                  }
+                }, 500);
+              }
+            }, 4000);
+            
+            // Handle close button clicks
+            document.addEventListener('click', function(e) {
+              if (e.target.classList.contains('flash-close')) {
+                const flashItem = e.target.parentElement;
+                flashItem.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                flashItem.style.opacity = '0';
+                flashItem.style.transform = 'translateX(100%)';
+                setTimeout(function() {
+                  if (flashItem.parentNode) {
+                    flashItem.remove();
+                  }
+                }, 300);
+              }
+            });
+          </script>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    {% if request.endpoint == 'main.index' %}
+    <footer class="site-footer">
+      <div class="container footer-flex">
+        <p>© Chat-Exchange</p>
+        <div class="footer-stats">
+          {% if visit_stat %}
+            <span>●</span>
+            <span>{{ t('Total visits') }}: {{ visit_stat.total_count }}</span>
+            <span>·</span>
+            <span>{{ t('Today') }}: {{ visit_stat.today_count }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </footer>
+    {% endif %}
+
+    <!-- 通知系統 JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      loadNotifications();
+      
+      // 每30秒自動刷新通知
+      setInterval(loadNotifications, 30000);
+      
+      // Initialize Google AdSense - Temporarily Hidden
+      /*
+      try {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.log('AdSense initialization error:', e);
+      }
+      */
+    });
+
+    function loadNotifications() {
+      const container = document.getElementById('notifications-container');
+      if (!container) return;
+      
+      // Get dismissed notifications from localStorage
+      const dismissedNotifications = JSON.parse(localStorage.getItem('dismissedNotifications') || '[]');
+      
+      fetch('/notifications/api/visible')
+        .then(response => response.json())
+        .then(data => {
+          container.innerHTML = '';
+          if (data.notifications && data.notifications.length > 0) {
+            // Filter out dismissed notifications
+            const filteredNotifications = data.notifications.filter(n => !dismissedNotifications.includes(n.id));
+            
+            // 限制首頁只顯示前3個通知
+            const notificationsToShow = filteredNotifications.slice(0, 3);
+            
+            notificationsToShow.forEach(notification => {
+              const notificationElement = createNotificationElement(notification);
+              container.appendChild(notificationElement);
+            });
+            
+            // 如果還有更多通知，顯示一個"查看更多"的鏈接
+            if (filteredNotifications.length > 3) {
+              const moreLink = document.createElement('div');
+              moreLink.className = 'notification-more';
+              moreLink.innerHTML = `
+                <a href="/notifications" style="color: #666; text-decoration: none; font-size: 0.85em;">
+                  查看更多通知 (${filteredNotifications.length - 3} 条)
+                </a>
+              `;
+              container.appendChild(moreLink);
+            }
+          }
+        })
+        .catch(error => {
+          console.error('加載通知失敗:', error);
+        });
+    }
+
+    function createNotificationElement(notification) {
+      const div = document.createElement('div');
+      div.className = `notification ${notification.type} notification-priority-${getPriorityClass(notification.priority)}`;
+      
+      // 自定義時間格式，確保使用簡體中文
+      const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+      };
+      
+      const expiresText = notification.expires_at ? 
+        `| 过期时间: ${formatDate(notification.expires_at)}` : '';
+      
+      div.innerHTML = `
+        <div class="notification-content">
+          <div class="notification-title">${notification.title}</div>
+          <div class="notification-text">${notification.content}</div>
+          <div class="notification-meta">
+            创建时间: ${formatDate(notification.created_at)}${expiresText}
+          </div>
+        </div>
+        <button class="notification-close" onclick="dismissNotification(${notification.id})" title="关闭通知">×</button>
+      `;
+      
+      return div;
+    }
+
+    function getPriorityClass(priority) {
+      return priority === 3 ? 'high' : priority === 2 ? 'medium' : 'low';
+    }
+
+    function dismissNotification(notificationId) {
+      // Save dismissed notification to localStorage
+      const dismissedNotifications = JSON.parse(localStorage.getItem('dismissedNotifications') || '[]');
+      if (!dismissedNotifications.includes(notificationId)) {
+        dismissedNotifications.push(notificationId);
+        localStorage.setItem('dismissedNotifications', JSON.stringify(dismissedNotifications));
+      }
+      
+      // Try to dismiss on server (for authenticated users)
+      fetch(`/notifications/${notificationId}/dismiss`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      })
+      .then(response => {
+        // Reload notifications regardless of server response
+        loadNotifications();
+      })
+      .catch(error => {
+        // Even if server fails, localStorage dismissal still works
+        console.log('Server dismiss failed (may be unauthenticated), using localStorage only');
+        loadNotifications();
+      });
+    }
+    </script>
+
+  </body>
+</html>

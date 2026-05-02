@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bgf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff9ecd"/>
+      <stop offset="100%" stop-color="#ffd1e8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#bgf)"/>
+  <g fill="#fff" fill-opacity="0.95" stroke="#b83280" stroke-width="2">
+    <!-- head -->
+    <circle cx="64" cy="48" r="20"/>
+    <!-- hair (long) -->
+    <path d="M44 48c2-10 10-18 20-18s18 8 20 18c0 12-8 20-18 20 0 0-4-2-6-2-12 0-16-8-16-18z" fill="#b83280" stroke="none"/>
+    <!-- shoulders/dress -->
+    <path d="M22 104c10-18 26-24 42-24s32 8 42 24v6H22v-6z"/>
+  </g>
+</svg>

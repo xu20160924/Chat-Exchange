@@ -1,0 +1,862 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - {{ t('Discussion Board') }} - Chat-Exchange{% endblock %}
+
+{% block main_class %}discussion-page-wide{% endblock %}
+
+{% block content %}
+<style>
+/* Clean Minimal Design System */
+main.discussion-page-wide {
+  max-width: 1400px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+  box-sizing: border-box !important;
+  background: #f7f7f8;
+}
+
+@media (min-width: 1600px) {
+  main.discussion-page-wide {
+    max-width: 1600px !important;
+    padding: 0 32px !important;
+  }
+}
+
+/* Modern Card Design */
+.post-detail {
+  background: transparent;
+  padding: 0;
+  margin: 32px 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.post-card {
+  background: white;
+  border-radius: 8px;
+  padding: 0;
+  margin-bottom: 24px;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.replies-card, .related-posts-card, .add-reply-card {
+  background: white;
+  border-radius: 8px;
+  padding: 0;
+  margin-bottom: 24px;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.card-header {
+  border-bottom: 1px solid #e5e5e5;
+  padding: 16px 24px;
+  margin: 0;
+  background: #fafafa;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h5 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-header h5 i {
+  font-size: 1.3rem;
+  color: #667eea;
+}
+
+/* Post Header */
+.post-card .card-header {
+  background: white;
+  padding: 20px 32px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.post-card .card-body {
+  padding: 20px 24px;
+}
+
+/* Clean Post Title */
+.post-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e5e5;
+}
+
+.author-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e5e5;
+}
+
+.author-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.author-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1a202c;
+}
+
+.author-location {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.post-content {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #333;
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.post-stats {
+  display: flex;
+  gap: 20px;
+  padding: 16px 0 0 0;
+  border-top: 1px solid #e5e5e5;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.stat-item:hover {
+  color: #333;
+}
+
+.stat-item i {
+  font-size: 1.3rem;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #10b981;
+  color: white;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.status-badge.pinned {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.locked {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.post-meta {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+/* Clean Reply Section */
+.reply-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: white;
+  margin-bottom: 0;
+  transition: background 0.2s ease;
+}
+
+.reply-item:hover {
+  background: #fafbfc;
+}
+
+.reply-item:last-child {
+  border-bottom: none;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.reply-author {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.reply-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reply-author-name {
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.author-badge {
+  background: #667eea;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reply-time {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.reply-content {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: #333;
+  margin: 0 0 12px 0;
+  word-wrap: break-word;
+}
+
+.reply-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.action-btn:hover {
+  background: #f3f4f6;
+  color: #333;
+}
+
+.reply-number {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.reply-sort-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: white;
+  color: #666;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid #e5e5e5;
+}
+
+.reply-sort-btn:hover {
+  background: #fafafa;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.reply-sort-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.like-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0;
+  transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.like-btn:hover {
+  color: #ef4444;
+}
+
+.like-btn i {
+  font-size: 1.1rem;
+}
+
+.like-btn i.bi-heart-fill {
+  color: #ef4444;
+}
+
+.heart-icon {
+  font-size: 1.1rem;
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Submit Button */
+.post-reply-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.post-reply-btn:hover {
+  background: #5568d3;
+  color: white;
+}
+
+.post-reply-btn i {
+  font-size: 1.2rem;
+}
+
+/* Clean Form Controls */
+.form-control {
+  border-radius: 4px;
+  border: 1px solid #e5e5e5;
+  padding: 12px 16px;
+  font-size: 1rem;
+  transition: border 0.2s ease;
+  background: white;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: none;
+  outline: none;
+}
+
+/* Enhanced Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Hide Reply Form by Default */
+.add-reply-card {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0 24px;
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s ease-out;
+}
+
+.add-reply-card.show {
+  max-height: 800px;
+  opacity: 1;
+  padding: 24px;
+}
+
+/* Show Reply Button */
+.show-reply-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+}
+
+.show-reply-btn:hover {
+  background: #5568d3;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+  transform: translateY(-1px);
+}
+
+.show-reply-btn i {
+  font-size: 1.2rem;
+}
+
+.cancel-reply-btn {
+  background: white;
+  color: #666;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-reply-btn:hover {
+  background: #fafafa;
+  border-color: #d1d5db;
+}
+
+/* Alert Styles */
+.locked-alert, .login-alert {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin: 24px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.locked-alert i, .login-alert i {
+  font-size: 1.5rem;
+}
+
+.login-alert a {
+  color: #667eea;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.login-alert a:hover {
+  color: #764ba2;
+}
+
+/* Empty State Styling */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+  color: #ddd;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.empty-state p {
+  font-size: 0.9rem;
+  color: #999;
+  margin: 0;
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
+  main.discussion-page-wide {
+    padding: 0 16px !important;
+  }
+  
+  .post-card .card-body {
+    padding: 24px;
+  }
+  
+  .post-detail,
+  .post-card,
+  .replies-card,
+  .related-posts-card,
+  .add-reply-card {
+    padding: 20px;
+  }
+  
+  .card-header h5 {
+    font-size: 1.2rem;
+  }
+  
+  .post-title {
+    font-size: 1.8rem;
+  }
+  
+  .post-stats {
+    flex-direction: column;
+  }
+}
+</style>
+
+<div class="post-detail">
+    <div class="post-main">
+        <!-- Post Card -->
+        <div class="card post-card">
+            <div class="card-header">
+                <div>
+                    <span class="category-badge" data-color="{{ post.category.color }}">
+                        {{ post.category.icon }} {% if current_lang == 'zh' %}{{ post.category.name }}{% else %}{{ post.category.name_en }}{% endif %}
+                    </span>
+                    {% if post.is_pinned %}
+                    <span class="status-badge pinned">
+                        <i class="bi bi-pin-angle-fill"></i> {{ t('Pinned') }}
+                    </span>
+                    {% endif %}
+                    {% if post.is_locked %}
+                    <span class="status-badge locked">
+                        <i class="bi bi-lock-fill"></i> {{ t('Locked') }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="post-meta">
+                    {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </div>
+            </div>
+            <div class="card-body">
+                <h2 class="post-title">{{ post.title }}</h2>
+                <div class="author-info">
+                    <img src="{{ post.author.get_avatar_url() }}" alt="{{ post.author.name }}" class="author-avatar">
+                    <div class="author-details">
+                        <div class="author-name">{{ post.author.name }}</div>
+                        {% if post.author.location %}
+                        <div class="author-location">
+                            <i class="bi bi-geo-alt"></i> {{ post.author.location }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="post-content">{{ post.content }}</div>
+                <div class="post-stats">
+                    <div class="stat-item">
+                        <i class="bi bi-eye"></i> {{ post.views }} {{ t('views') }}
+                    </div>
+                    <div class="stat-item">
+                        <i class="bi bi-chat"></i> {{ post.replies_count }} {{ t('replies') }}
+                    </div>
+                    <div class="stat-item">
+                        <button class="like-btn post-like-btn" type="button" data-post-id="{{ post.id }}">
+                            <span class="heart-icon">{% if is_liked %}❤️{% else %}🤍{% endif %}</span> <span id="post-likes">{{ post.likes_count }}</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <!-- Replies Card -->
+        <div class="card replies-card">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-chat-left-text"></i> {{ t('Replies') }} ({{ post.replies_count }})
+                </h5>
+                <div class="btn-group">
+                    <a href="{{ url_for('main.discussions_post_detail', post_id=post.id, sort='oldest') }}"
+                       class="reply-sort-btn {% if current_sort == 'oldest' %}active{% endif %}">
+                        {{ t('Oldest') }}
+                    </a>
+                    <a href="{{ url_for('main.discussions_post_detail', post_id=post.id, sort='newest') }}"
+                       class="reply-sort-btn {% if current_sort == 'newest' %}active{% endif %}">
+                        {{ t('Newest') }}
+                    </a>
+                    <a href="{{ url_for('main.discussions_post_detail', post_id=post.id, sort='popular') }}"
+                       class="reply-sort-btn {% if current_sort == 'popular' %}active{% endif %}">
+                        {{ t('Popular') }}
+                    </a>
+                </div>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for reply in replies %}
+                <div class="reply-item" id="reply-{{ reply.id }}">
+                    <div class="reply-header">
+                        <div class="reply-author">
+                            <img src="{{ reply.author.get_avatar_url() }}" alt="{{ reply.author.name }}" class="author-avatar">
+                            <div class="reply-author-info">
+                                <div class="reply-author-name">
+                                    {{ reply.author.name }}
+                                    {% if reply.author.id == post.author_id %}
+                                    <span class="author-badge">{{ t('Author') }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="reply-time">{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                        </div>
+                        <div class="reply-number">#{{ loop.index }}</div>
+                    </div>
+                    <div class="reply-content">{{ reply.content }}</div>
+                    <div class="reply-actions">
+                        {% if current_user.is_authenticated %}
+                        <button class="action-btn like-reply-btn" type="button" data-reply-id="{{ reply.id }}">
+                            <span class="heart-icon">{% if reply_liked.get(reply.id, false) %}❤️{% else %}🤍{% endif %}</span> <span id="reply-likes-{{ reply.id }}">{{ reply.likes|length }}</span>
+                        </button>
+                        <button class="action-btn" type="button" data-reply-id="{{ reply.id }}" data-reply-author="{{ reply.author.name|tojson }}">
+                            <i class="bi bi-reply"></i> {{ t('Reply') }}
+                        </button>
+                        {% endif %}
+                    </div>
+                    <!-- Nested Replies -->
+                    {% if reply.child_replies %}
+                    <div class="nested-replies">
+                        {% for child_reply in reply.child_replies %}
+                        <div class="nested-reply">
+                            <div class="reply-author">
+                                <img src="{{ child_reply.author.get_avatar_url() }}" alt="{{ child_reply.author.name }}" class="author-avatar">
+                                <div class="reply-author-info">
+                                    <div class="reply-author-name">{{ child_reply.author.name }}</div>
+                                    <div class="reply-time">{{ child_reply.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                </div>
+                            </div>
+                            <div class="reply-content">{{ child_reply.content }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if not replies %}
+                <div class="empty-state">
+                    <i class="bi bi-heart"></i>
+                    <p>{{ t('No replies yet. Be the first to reply!') }}</p>
+                </div>
+                {% endif %}
+            </div>
+        <!-- Related Posts -->
+        {% if related_posts %}
+        <div class="card related-posts-card">
+            <div class="card-header">
+                <h5>{{ t('Related Posts') }}</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for related_post in related_posts %}
+                <div class="related-post-item">
+                    <a href="{{ url_for('main.discussions_post_detail', post_id=related_post.id) }}" class="related-post-link">
+                        <div class="related-post-title">{{ related_post.title }}</div>
+                        <div class="related-post-meta">
+                            <i class="bi bi-eye"></i> {{ related_post.views }}
+                            <span>•</span>
+                            <i class="bi bi-chat"></i> {{ related_post.replies_count }}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Reply Form -->
+        {% if current_user.is_authenticated %}
+        {% if not post.is_locked %}
+        <!-- Show Reply Button -->
+        <div style="text-align: center; margin: 32px 0;">
+            <button class="show-reply-btn" onclick="toggleReplyForm()">
+                <i class="bi bi-chat-dots"></i> {{ t('Add Your Reply') }}
+            </button>
+        </div>
+        
+        <!-- Hidden Reply Form -->
+        <div class="card add-reply-card" id="reply-form-card">
+            <div class="card-header">
+                <h5><i class="bi bi-pencil"></i> {{ t('Add Your Reply') }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main.discussions_add_reply', post_id=post.id) }}" id="reply-form">
+                    <input type="hidden" name="parent_reply_id" id="parent-reply-id" value="">
+                    <div class="mb-3">
+                        <textarea class="form-control" name="content" id="reply-content" rows="5"
+                                  placeholder="{{ t('Share your thoughts...') }}" required></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                        <button type="button" class="cancel-reply-btn" onclick="toggleReplyForm()">
+                            <i class="bi bi-x-circle"></i> {{ t('Cancel') }}
+                        </button>
+                        <button type="submit" class="post-reply-btn">
+                            <i class="bi bi-send"></i> {{ t('Post Reply') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="locked-alert">
+            <i class="bi bi-lock-fill"></i> {{ t('This post is locked and cannot accept new replies.') }}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="login-alert">
+            <i class="bi bi-info-circle"></i> {{ t('Please') }}
+            <a href="{{ url_for('auth.login_page') }}">{{ t('login') }}</a>
+            {{ t('to reply to this post.') }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Toggle Reply Form
+function toggleReplyForm() {
+  const replyCard = document.getElementById('reply-form-card');
+  replyCard.classList.toggle('show');
+  
+  // Focus on textarea when opening
+  if (replyCard.classList.contains('show')) {
+    setTimeout(() => {
+      document.getElementById('reply-content').focus();
+    }, 300);
+  }
+}
+
+function likePost(postId) {
+  fetch(`/discussions/post/${postId}/like`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('post-likes').textContent = data.likes;
+      // Toggle heart color
+      const likeBtn = document.querySelector(`.post-like-btn[data-post-id="${postId}"]`);
+      const heartIcon = likeBtn.querySelector('.heart-icon');
+      heartIcon.textContent = data.liked ? '❤️' : '🤍';
+    }
+  });
+}
+
+function likeReply(replyId) {
+  fetch(`/discussions/reply/${replyId}/like`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById(`reply-likes-${replyId}`).textContent = data.likes;
+      // Toggle heart color
+      const likeBtn = document.querySelector(`.like-reply-btn[data-reply-id="${replyId}"]`);
+      const heartIcon = likeBtn.querySelector('.heart-icon');
+      heartIcon.textContent = data.liked ? '❤️' : '🤍';
+    }
+  });
+}
+
+function showReplyForm(replyId, authorName) {
+  document.getElementById('parent-reply-id').value = replyId;
+  document.getElementById('reply-content').focus();
+}
+
+function cancelReply() {
+  document.getElementById('parent-reply-id').value = '';
+  document.getElementById('reply-content').value = '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Set category badge colors dynamically
+    const badges = document.querySelectorAll('.category-badge[data-color]');
+    badges.forEach(badge => {
+      const color = badge.getAttribute('data-color');
+      badge.style.backgroundColor = color;
+    });
+    // Add event listeners for like post buttons
+  const likePostButtons = document.querySelectorAll('button[data-post-id]');
+  likePostButtons.forEach(button => {
+    const postId = button.dataset.postId;
+    button.addEventListener('click', () => likePost(postId));
+  });
+
+  // Add event listeners for like reply buttons
+  const likeReplyButtons = document.querySelectorAll('.action-btn[data-reply-id]:not([data-reply-author])');
+  likeReplyButtons.forEach(button => {
+    const replyId = button.dataset.replyId;
+    button.addEventListener('click', () => likeReply(replyId));
+  });
+
+  // Add event listeners for reply buttons
+  const replyButtons = document.querySelectorAll('.action-btn[data-reply-author]');
+  replyButtons.forEach(button => {
+    const replyId = button.dataset.replyId;
+    const authorName = JSON.parse(button.dataset.replyAuthor);
+    button.addEventListener('click', () => showReplyForm(replyId, authorName));
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat-Exchange - Free Language Exchange Online | Find Conversation Partners & Language Learners{% endblock %}
+{% block description %}Join Chat-Exchange, the free online platform to find language exchange partners. Practice languages with native speakers through free conversation, improve your skills through chat, and connect with language learners worldwide.{% endblock %}
+
+{% block og_title %}Chat-Exchange - Free Conversation with Language Learners Worldwide{% endblock %}
+{% block og_description %}Free language exchange platform. Find conversation partners, connect with language learners, practice languages online, and improve fluency with native speakers.{% endblock %}
+
+{% block content %}
+<div class="hero" style="max-height:220px">
+  <img src="{{ url_for('static', filename='hero.svg') }}" alt="Free language exchange - Find conversation partners and language learners for free online practice" loading="lazy" width="800" height="220">
+</div>
+
+<section class="section">
+  <h1>{{ t('What is Chat-Exchange?') }}</h1>
+  <p class="lead">{{ t('Chat-Exchange helps you find partners to practice languages with, match by native/learning languages and location, and chat safely through private messages.') }}</p>
+</section>
+
+<section class="section" style="margin-top:16px">
+  <h2>{{ t('Why you will like it') }}</h2>
+  <div class="features">
+    <div class="feature">
+      <div class="feature-title">{{ t('Smart search') }}</div>
+      <p>{{ t('Filter by native and learning languages, plus location to meet nearby or online.') }}</p>
+    </div>
+    <div class="feature">
+      <div class="feature-title">{{ t('Private messaging') }}</div>
+      <p>{{ t('Start a conversation without sharing your personal contact details.') }}</p>
+    </div>
+    <div class="feature">
+      <div class="feature-title">{{ t('Lightweight profiles') }}</div>
+      <p>{{ t('Share your goals, native languages and what you are learning—nothing complicated.') }}</p>
+    </div>
+    <div class="feature">
+      <div class="feature-title">{{ t('Free and simple') }}</div>
+      <p>{{ t('It is free to join and built to stay fast and easy to use.') }}</p>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- Sidebar Ad - Temporarily Hidden -->
+<!--
+<div class="ad-container">
+  <ins class="adsbygoogle ad-sidebar"
+       style="display:block"
+       data-ad-client="ca-pub-8955117503238507"
+       data-ad-slot="2345678901"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+-->
+
+<!-- Floating Contact Modal (Login Required) -->
+{% if current_user.is_authenticated %}
+<div class="contact-modal" id="contact-modal">
+  <div class="modal-backdrop" onclick="toggleContactForm()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>{{ t('Contact Us') }}</h3>
+      <button type="button" class="close-modal" onclick="toggleContactForm()" title="{{ t('Close') }}">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <p class="modal-description">{{ t('Have questions or feedback? We\'d love to hear from you!') }}</p>
+      
+      <form method="post" action="{{ url_for('main.contact_submit') }}" class="contact-form">
+        <!-- Auto-filled fields for logged-in users (hidden) -->
+        <input type="hidden" name="name" value="{{ current_user.name }}">
+        <input type="hidden" name="email" value="{{ current_user.email }}">
+        
+        <div class="form-group">
+          <label for="subject">{{ t('Subject') }}</label>
+          <input type="text" id="subject" name="subject" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="message">{{ t('Message') }}</label>
+          <textarea id="message" name="message" rows="5" required placeholder="{{ t('Tell us how we can help you...') }}"></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="toggleContactForm()">{{ t('Cancel') }}</button>
+          <button type="submit" class="btn">{{ t('Send Message') }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Floating Contact Button (Login Required) -->
+{% if current_user.is_authenticated %}
+<div class="floating-contact-btn" id="floating-contact-btn" onclick="toggleContactForm()">
+  <div class="contact-icon">📧</div>
+  <span class="contact-text">{{ t('Contact Us') }}</span>
+</div>
+{% else %}
+<div class="floating-contact-btn" id="floating-contact-btn" onclick="showLoginRequiredMessage()">
+  <div class="contact-icon">📧</div>
+  <span class="contact-text">{{ t('Contact Us') }}</span>
+</div>
+{% endif %}
+
+<section class="section cta" style="margin-top:16px">
+  <div class="cta-box search-cta">
+    <div class="cta-text">
+      <h3>{{ t('Find Your Language Partner') }}</h3>
+    </div>
+    <form method="get" action="{{ url_for('main.search') }}" class="quick-search-form">
+      <!-- Use "any match" mode for homepage search -->
+      <input type="hidden" name="mode" value="any">
+      <div class="quick-search-row">
+        <select name="speak" class="quick-search-select">
+          <option value="">{{ t('I speak') }}...</option>
+          <option value="English">English</option>
+          <option value="中文">中文</option>
+          <option value="Español">Español</option>
+          <option value="Français">Français</option>
+          <option value="Deutsch">Deutsch</option>
+          <option value="Português">Português</option>
+          <option value="Italiano">Italiano</option>
+          <option value="日本語">日本語</option>
+          <option value="한국어">한국어</option>
+          <option value="Русский">Русский</option>
+          <option value="العربية">العربية</option>
+          <option value="हिन्दी">हिन्दी</option>
+          <option value="Türkçe">Türkçe</option>
+          <option value="Tiếng Việt">Tiếng Việt</option>
+          <option value="ไทย">ไทย</option>
+          <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+        </select>
+        <select name="learn" class="quick-search-select">
+          <option value="">{{ t("I'm learning") }}...</option>
+          <option value="English">English</option>
+          <option value="中文">中文</option>
+          <option value="Español">Español</option>
+          <option value="Français">Français</option>
+          <option value="Deutsch">Deutsch</option>
+          <option value="Português">Português</option>
+          <option value="Italiano">Italiano</option>
+          <option value="日本語">日本語</option>
+          <option value="한국어">한국어</option>
+          <option value="Русский">Русский</option>
+          <option value="العربية">العربية</option>
+          <option value="हिन्दी">हिन्दी</option>
+          <option value="Türkçe">Türkçe</option>
+          <option value="Tiếng Việt">Tiếng Việt</option>
+          <option value="ไทย">ไทย</option>
+          <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+        </select>
+        <button type="submit" class="btn btn-search-large">
+          <span class="search-icon">🔍</span>
+          {{ t('Search Partners') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+// Check if contact form was successfully sent
+window.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('contact_sent') === '1') {
+    showContactSuccessModal();
+    // Clean URL without page reload
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+});
+
+// Show success modal after contact form submission
+function showContactSuccessModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'contact-success-overlay';
+  
+  overlay.innerHTML = `
+    <div class="contact-success-modal">
+      <div class="success-icon">✓</div>
+      <h3 class="success-title">{{ t('Message Sent Successfully') }}</h3>
+      <p class="success-message">{{ t('Thank you for contacting us! We will get back to you soon.') }}</p>
+      <button class="btn-success-close" onclick="this.closest('.contact-success-overlay').remove(); document.body.style.overflow='auto'">
+        {{ t('Close') }}
+      </button>
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+  
+  // Close on overlay click
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+      document.body.style.overflow = 'auto';
+    }
+  });
+  
+  // Close on Escape key
+  const escapeHandler = function(e) {
+    if (e.key === 'Escape' && document.body.contains(overlay)) {
+      document.body.removeChild(overlay);
+      document.body.style.overflow = 'auto';
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+  
+  // Auto-close after 5 seconds
+  setTimeout(() => {
+    if (document.body.contains(overlay)) {
+      document.body.removeChild(overlay);
+      document.body.style.overflow = 'auto';
+    }
+  }, 5000);
+}
+
+// Redirect to login page for non-logged-in users
+function showLoginRequiredMessage() {
+  window.location.href = '{{ url_for('auth.login_page') }}';
+}
+
+function toggleContactForm() {
+  const modal = document.getElementById('contact-modal');
+  const floatingBtn = document.getElementById('floating-contact-btn');
+  
+  // Check if modal exists (only for logged-in users)
+  if (!modal) {
+    // Modal doesn't exist, user should be redirected to login by the button
+    return;
+  }
+  
+  if (modal.style.display === 'none' || modal.style.display === '') {
+    // Show modal
+    modal.style.display = 'flex';
+    if (floatingBtn) floatingBtn.style.display = 'none';
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Focus on first input (subject field for logged-in users)
+    setTimeout(() => {
+      const subjectInput = document.getElementById('subject');
+      if (subjectInput) subjectInput.focus();
+    }, 300);
+  } else {
+    // Hide modal
+    modal.style.display = 'none';
+    if (floatingBtn) floatingBtn.style.display = 'flex';
+    
+    // Restore body scroll
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    const modal = document.getElementById('contact-modal');
+    if (modal && modal.style.display === 'flex') {
+      toggleContactForm();
+    }
+  }
+});
+
+// Prevent modal content clicks from closing modal
+document.addEventListener('click', function(event) {
+  const modal = document.getElementById('contact-modal');
+  if (!modal) return;
+  
+  const modalContent = modal.querySelector('.modal-content');
+  
+  if (event.target === modal && event.target !== modalContent) {
+    toggleContactForm();
+  }
+});
+
+// Dynamic language filtering for quick search bar - same as search page
+function initQuickSearchFiltering() {
+    const speakSelect = document.querySelector('.quick-search-form select[name="speak"]');
+    const learnSelect = document.querySelector('.quick-search-form select[name="learn"]');
+    
+    if (!speakSelect || !learnSelect) {
+        console.log('Quick search selects not found');
+        return;
+    }
+    
+    // Store all original options
+    const speakOptions = Array.from(speakSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.text
+    }));
+    
+    const learnOptions = Array.from(learnSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.text
+    }));
+    
+    function updateSpeakOptions() {
+        const learnValue = learnSelect.value;
+        const currentSpeakValue = speakSelect.value;
+        
+        // Clear and rebuild options
+        speakSelect.innerHTML = '';
+        speakOptions.forEach(opt => {
+            // Skip if this language is selected in "I'm learning" (unless it's empty)
+            if (opt.value && opt.value === learnValue) {
+                return; // Don't add this option
+            }
+            
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.text = opt.text;
+            option.selected = opt.value === currentSpeakValue;
+            speakSelect.appendChild(option);
+        });
+    }
+    
+    function updateLearnOptions() {
+        const speakValue = speakSelect.value;
+        const currentLearnValue = learnSelect.value;
+        
+        // Clear and rebuild options
+        learnSelect.innerHTML = '';
+        learnOptions.forEach(opt => {
+            // Skip if this language is selected in "I speak" (unless it's empty)
+            if (opt.value && opt.value === speakValue) {
+                return; // Don't add this option
+            }
+            
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.text = opt.text;
+            option.selected = opt.value === currentLearnValue;
+            learnSelect.appendChild(option);
+        });
+    }
+    
+    // Listen for changes
+    speakSelect.addEventListener('change', function() {
+        updateLearnOptions();
+    });
+    
+    learnSelect.addEventListener('change', function() {
+        updateSpeakOptions();
+    });
+    
+    // Initial filter on page load (in case coming back from search with params)
+    updateSpeakOptions();
+    updateLearnOptions();
+    
+    console.log('Quick search language filtering initialized');
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', function() {
+    initQuickSearchFiltering();
+});
+</script>
+{% endblock %}

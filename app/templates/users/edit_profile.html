@@ -1,0 +1,986 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ t('Edit profile') }}</h1>
+
+<!-- Avatar Upload Section -->
+<div class="avatar-upload-section">
+  <div class="avatar-preview-container">
+    <img src="{{ current_user.get_avatar_url() }}" alt="Avatar" class="avatar-preview" id="avatar-preview">
+    <div class="avatar-overlay">
+      <button type="button" class="btn-change-avatar" onclick="document.getElementById('avatar-file-input').click()">
+        📷 {{ t('Change Photo') }}
+      </button>
+      {% if current_user.avatar_data %}
+      <button type="button" class="btn-delete-avatar" onclick="removeAvatar()">
+        🗑️ {{ t('Delete') }}
+      </button>
+      {% endif %}
+    </div>
+  </div>
+  <div class="avatar-upload-info">
+    <p class="avatar-info-text">{{ t('Upload a profile photo') }}</p>
+    <p class="avatar-info-sub">{{ t('JPG, PNG, GIF or WEBP. Max 5MB') }}</p>
+  </div>
+</div>
+
+<form method="post" action="{{ url_for('main.edit_profile_submit') }}" enctype="multipart/form-data" class="form">
+  <!-- Hidden file input for avatar -->
+  <input type="file" name="avatar" id="avatar-file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" onchange="previewAvatar(this)" style="display: none;">
+  <input type="hidden" name="delete_avatar" id="delete-avatar-flag" value="">
+  <label>{{ t('Name') }}<input type="text" name="name" value="{{ current_user.name }}" readonly style="background-color: #f5f5f5; color: #666;"></label>
+  <label>{{ t('Location') }}<input type="text" name="location" value="{{ current_user.location or '' }}"></label>
+  <label>{{ t('Native languages') }}
+    <div class="tag-input-container" id="native-container">
+      <div class="tag-list" id="native-tags"></div>
+      <div class="input-wrapper">
+        <input type="text" 
+               class="tag-input" 
+               id="native-input" 
+               placeholder="Type to search languages..."
+               autocomplete="off">
+        <div class="language-suggestions" id="native-suggestions"></div>
+      </div>
+    </div>
+    <input type="hidden" name="native_languages" id="native-hidden" value="{{ current_user.native_languages or '' }}">
+  </label>
+  
+  <label>{{ t('Learning languages') }}
+    <div class="tag-input-container" id="learning-container">
+      <div class="tag-list" id="learning-tags"></div>
+      <div class="input-wrapper">
+        <input type="text" 
+               class="tag-input" 
+               id="learning-input" 
+               placeholder="Type to search languages..."
+               autocomplete="off">
+        <div class="language-suggestions" id="learning-suggestions"></div>
+      </div>
+    </div>
+    <input type="hidden" name="learning_languages" id="learning-hidden" value="{{ current_user.learning_languages or '' }}">
+  </label>
+  <label>{{ t('Bio') }}<textarea name="bio">{{ current_user.bio or '' }}</textarea></label>
+  <label>{{ t('Sex') }}
+    <div class="custom-select">
+        <select name="sex" id="sex-select" class="beautiful-select">
+          <option value="">—</option>
+          <option value="Male" {% if current_user.sex=='Male' %}selected{% endif %}>{{ t('Male') }}</option>
+          <option value="Female" {% if current_user.sex=='Female' %}selected{% endif %}>{{ t('Female') }}</option>
+        </select>
+    </div>
+  </label>
+  <label>{{ t('Age') }}<input type="number" name="age" value="{{ current_user.age or '' }}" placeholder="Enter your age" min="18" max="120"></label>
+  <label>Goal<input type="text" name="learning_goal" value="{{ current_user.learning_goal or '' }}"></label>
+  <label>Hobbies<input type="text" name="hobbies" value="{{ current_user.hobbies or '' }}"></label>
+  
+  <!-- Password Change Section -->
+  <div class="password-section">
+    <h3>{{ t('Change Password') }}</h3>
+    <div class="password-fields">
+      <label>{{ t('Current Password') }}<input type="password" name="current_password" placeholder="{{ t('Enter current password') }}"></label>
+      <label>{{ t('New Password') }}<input type="password" name="new_password" placeholder="{{ t('Enter new password') }}"></label>
+      <label>{{ t('Confirm New Password') }}<input type="password" name="confirm_password" placeholder="{{ t('Confirm new password') }}"></label>
+    </div>
+  </div>
+  
+  <label>{{ t('Current level') }}
+    <div class="custom-select">
+        <select name="current_level" id="level-select" class="beautiful-select">
+          <option value="">{{ t('Select your level') }}</option>
+          <option value="Beginner (A1)" {% if current_user.current_level=='Beginner (A1)' %}selected{% endif %}>{{ t('Beginner (A1)') }}</option>
+          <option value="Elementary (A2)" {% if current_user.current_level=='Elementary (A2)' %}selected{% endif %}>{{ t('Elementary (A2)') }}</option>
+          <option value="Intermediate (B1)" {% if current_user.current_level=='Intermediate (B1)' %}selected{% endif %}>{{ t('Intermediate (B1)') }}</option>
+          <option value="Upper Intermediate (B2)" {% if current_user.current_level=='Upper Intermediate (B2)' %}selected{% endif %}>{{ t('Upper Intermediate (B2)') }}</option>
+          <option value="Advanced (C1)" {% if current_user.current_level=='Advanced (C1)' %}selected{% endif %}>{{ t('Advanced (C1)') }}</option>
+          <option value="Proficient (C2)" {% if current_user.current_level=='Proficient (C2)' %}selected{% endif %}>{{ t('Proficient (C2)') }}</option>
+        </select>
+    </div>
+  </label>
+  <button type="submit" class="btn">{{ t('Save') }}</button>
+</form>
+
+<script>
+// Custom age validation that respects website language
+function validateAgeInput(input) {
+    const value = parseInt(input.value);
+    const minAge = 18;
+    const maxAge = 120;
+    
+    // Clear any previous validation
+    input.setCustomValidity('');
+    input.removeAttribute('data-invalid');
+    
+    // Only validate if there's a value
+    if (input.value.trim() !== '') {
+        if (isNaN(value) || value < minAge || value > maxAge) {
+            // Get current language from the page
+            const currentLang = document.documentElement.lang || 'en';
+            
+            // Define validation messages based on language
+            const messages = {
+                'en': 'Age must be greater than or equal to 18',
+                'zh': '年龄必须大于或等于18',
+                'es': 'La edad debe ser mayor o igual a 18',
+                'fr': 'L\'âge doit être supérieur ou égal à 18',
+                'de': 'Das Alter muss größer oder gleich 18 sein',
+                'it': 'L\'età deve essere maggiore o uguale a 18',
+                'pt': 'A idade deve ser maior ou igual a 18',
+                'ar': 'يجب أن يكون العمر أكبر من أو يساوي 18',
+                'ja': '年齢は18歳以上である必要があります',
+                'ko': '나이는 18세 이상이어야 합니다',
+                'ru': 'Возраст должен быть больше или равен 18'
+            };
+            
+            const message = messages[currentLang] || messages['en'];
+            input.setCustomValidity(message);
+            input.setAttribute('data-invalid', 'true');
+            
+            // Force validation to show immediately
+            input.reportValidity();
+            
+            // Also show custom tooltip
+            showCustomTooltip(input, message);
+        }
+    } else {
+        hideCustomTooltip(input);
+    }
+}
+
+// Custom tooltip functions
+function showCustomTooltip(input, message) {
+    hideCustomTooltip(input); // Remove any existing tooltip
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'age-validation-tooltip';
+    
+    // Create icon and message content
+    const icon = document.createElement('span');
+    icon.textContent = '⚠️';
+    icon.style.cssText = 'font-size: 16px; margin-right: 8px; flex-shrink: 0;';
+    
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    
+    tooltip.appendChild(icon);
+    tooltip.appendChild(messageSpan);
+    tooltip.style.cssText = `
+        position: absolute;
+        background: #fef3cd;
+        color: #92400e;
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 1000;
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.1);
+        border: 1px solid #fbbf24;
+        border-left: 4px solid #f59e0b;
+        white-space: nowrap;
+        pointer-events: none;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    `;
+    
+    // Position tooltip
+    const rect = input.getBoundingClientRect();
+    tooltip.style.left = rect.left + 'px';
+    tooltip.style.top = (rect.bottom + 8) + 'px';
+    
+    document.body.appendChild(tooltip);
+    input._tooltip = tooltip;
+}
+
+function hideCustomTooltip(input) {
+    if (input._tooltip) {
+        input._tooltip.remove();
+        input._tooltip = null;
+    }
+}
+
+// Predefined Language Enum
+const LANGUAGE_ENUM = [
+    { value: 'English', display: 'English' },
+    { value: '中文', display: '中文' },
+    { value: 'Español', display: 'Español' },
+    { value: 'Français', display: 'Français' },
+    { value: 'Deutsch', display: 'Deutsch' },
+    { value: 'Italiano', display: 'Italiano' },
+    { value: 'Português', display: 'Português' },
+    { value: 'Русский', display: 'Русский' },
+    { value: '日本語', display: '日本語' },
+    { value: '한국어', display: '한국어' },
+    { value: 'العربية', display: 'العربية' },
+    { value: 'हिन्दी', display: 'हिन्दी' },
+    { value: 'Türkçe', display: 'Türkçe' },
+    { value: 'Tiếng Việt', display: 'Tiếng Việt' },
+    { value: 'ไทย', display: 'ไทย' },
+    { value: 'Bahasa Indonesia', display: 'Bahasa Indonesia' }
+];
+
+// Tag Input System with Autocomplete
+class LanguageTagInput {
+    constructor(type) {
+        this.type = type; // 'native' or 'learning'
+        this.selectedLanguages = [];
+        this.input = document.getElementById(`${type}-input`);
+        this.tagsContainer = document.getElementById(`${type}-tags`);
+        this.suggestionsContainer = document.getElementById(`${type}-suggestions`);
+        this.hiddenInput = document.getElementById(`${type}-hidden`);
+        this.container = document.getElementById(`${type}-container`);
+        
+        this.init();
+    }
+    
+    init() {
+        // Load existing languages
+        const existing = this.hiddenInput.value;
+        if (existing) {
+            this.selectedLanguages = existing.split(',').map(l => l.trim()).filter(l => l);
+            this.renderTags();
+        }
+        
+        // Input event listeners
+        this.input.addEventListener('input', () => this.handleInput());
+        this.input.addEventListener('focus', () => this.showSuggestions());
+        this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+        
+        // Clear input on blur to prevent manual text entry
+        this.input.addEventListener('blur', () => {
+            setTimeout(() => {
+                // Clear any text that wasn't selected from suggestions
+                this.input.value = '';
+                this.hideSuggestions();
+            }, 200); // Small delay to allow click events on suggestions to fire first
+        });
+        
+        // Click outside to close suggestions
+        document.addEventListener('click', (e) => {
+            if (!this.container.contains(e.target)) {
+                this.input.value = ''; // Clear input when clicking outside
+                this.hideSuggestions();
+            }
+        });
+    }
+    
+    handleInput() {
+        const query = this.input.value.toLowerCase().trim();
+        
+        if (query === '') {
+            this.showAllSuggestions();
+        } else {
+            this.filterSuggestions(query);
+        }
+    }
+    
+    showSuggestions() {
+        const query = this.input.value.toLowerCase().trim();
+        if (query === '') {
+            this.showAllSuggestions();
+        } else {
+            this.filterSuggestions(query);
+        }
+    }
+    
+    showAllSuggestions() {
+        // Get languages from the OTHER field (native vs learning)
+        const otherType = this.type === 'native' ? 'learning' : 'native';
+        const otherInput = document.getElementById(`${otherType}-hidden`);
+        const otherLanguages = otherInput ? otherInput.value.split(',').map(l => l.trim()).filter(l => l) : [];
+        
+        // Filter out: already selected in current field OR selected in other field
+        const available = LANGUAGE_ENUM.filter(lang => 
+            !this.selectedLanguages.includes(lang.value) &&
+            !otherLanguages.includes(lang.value)
+        );
+        this.renderSuggestions(available);
+    }
+    
+    filterSuggestions(query) {
+        // Get languages from the OTHER field (native vs learning)
+        const otherType = this.type === 'native' ? 'learning' : 'native';
+        const otherInput = document.getElementById(`${otherType}-hidden`);
+        const otherLanguages = otherInput ? otherInput.value.split(',').map(l => l.trim()).filter(l => l) : [];
+        
+        // Filter out: already selected in current field OR selected in other field
+        const available = LANGUAGE_ENUM.filter(lang => 
+            !this.selectedLanguages.includes(lang.value) &&
+            !otherLanguages.includes(lang.value) &&
+            (lang.value.toLowerCase().includes(query) || 
+             lang.display.toLowerCase().includes(query))
+        );
+        this.renderSuggestions(available);
+    }
+    
+    renderSuggestions(languages) {
+        if (languages.length === 0) {
+            this.suggestionsContainer.innerHTML = '<div class="no-suggestions">No languages found</div>';
+            this.suggestionsContainer.classList.add('active');
+            return;
+        }
+        
+        this.suggestionsContainer.innerHTML = languages.map(lang => 
+            `<div class="suggestion-item" data-value="${lang.value}">
+                <span class="suggestion-text">${lang.display}</span>
+            </div>`
+        ).join('');
+        
+        // Add click handlers (using mousedown to fire before blur event)
+        this.suggestionsContainer.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Prevent blur from firing
+                this.addLanguage(item.dataset.value);
+            });
+            // Also add click as backup for keyboard navigation
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.addLanguage(item.dataset.value);
+            });
+        });
+        
+        this.suggestionsContainer.classList.add('active');
+    }
+    
+    hideSuggestions() {
+        this.suggestionsContainer.classList.remove('active');
+    }
+    
+    handleKeydown(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstSuggestion = this.suggestionsContainer.querySelector('.suggestion-item');
+            if (firstSuggestion) {
+                this.addLanguage(firstSuggestion.dataset.value);
+            }
+            // Clear input even if no suggestion selected (prevent manual entry)
+            this.input.value = '';
+        } else if (e.key === 'Escape') {
+            this.hideSuggestions();
+            this.input.value = ''; // Clear input on escape
+            this.input.blur();
+        }
+    }
+    
+    addLanguage(value) {
+        // Only add if it's a valid language from the enum and not already selected
+        const isValidLanguage = LANGUAGE_ENUM.some(lang => lang.value === value);
+        
+        if (isValidLanguage && !this.selectedLanguages.includes(value)) {
+            this.selectedLanguages.push(value);
+            this.renderTags();
+            this.updateHiddenInput();
+            this.input.value = '';
+            // Keep showing suggestions for easy multi-select
+            // This will automatically exclude the newly added language and languages from other field
+            this.showAllSuggestions();
+            // Keep focus on input for continuous selection
+            setTimeout(() => {
+                this.input.focus();
+            }, 10);
+        }
+    }
+    
+    removeLanguage(value) {
+        this.selectedLanguages = this.selectedLanguages.filter(l => l !== value);
+        this.renderTags();
+        this.updateHiddenInput();
+        // Refresh suggestions to show the removed language again
+        this.showAllSuggestions();
+    }
+    
+    renderTags() {
+        this.tagsContainer.innerHTML = this.selectedLanguages.map(lang => {
+            const langObj = LANGUAGE_ENUM.find(l => l.value === lang);
+            const display = langObj ? langObj.display : lang;
+            return `
+                <div class="language-tag" data-value="${lang}">
+                    <span class="tag-text">${display}</span>
+                    <button type="button" class="tag-remove" data-value="${lang}">×</button>
+                </div>
+            `;
+        }).join('');
+        
+        // Add remove handlers with proper event handling
+        this.tagsContainer.querySelectorAll('.tag-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.removeLanguage(btn.dataset.value);
+            });
+        });
+    }
+    
+    updateHiddenInput() {
+        this.hiddenInput.value = this.selectedLanguages.join(',');
+    }
+}
+
+// Add event listeners when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const ageInput = document.querySelector('input[name="age"]');
+    
+    if (ageInput) {
+        ageInput.addEventListener('input', function() {
+            validateAgeInput(this);
+        });
+        ageInput.addEventListener('blur', function() {
+            validateAgeInput(this);
+        });
+        ageInput.addEventListener('invalid', function() {
+            validateAgeInput(this);
+        });
+        ageInput.addEventListener('focus', function() {
+            hideCustomTooltip(this);
+        });
+    }
+    
+    // Initialize language tag inputs
+    new LanguageTagInput('native');
+    new LanguageTagInput('learning');
+    
+    // Also validate on form submission
+    const profileForm = document.querySelector('form');
+    if (profileForm && ageInput) {
+        profileForm.addEventListener('submit', function(e) {
+            if (ageInput.value.trim() !== '') {
+                validateAgeInput(ageInput);
+                if (!ageInput.checkValidity()) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            // Validate password fields if they have values
+            const currentPassword = document.querySelector('input[name="current_password"]');
+            const newPassword = document.querySelector('input[name="new_password"]');
+            const confirmPassword = document.querySelector('input[name="confirm_password"]');
+            
+            if (currentPassword.value || newPassword.value || confirmPassword.value) {
+                if (!currentPassword.value || !newPassword.value || !confirmPassword.value) {
+                    alert('{{ t("Please fill in all password fields") }}');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                if (newPassword.value !== confirmPassword.value) {
+                    alert('{{ t("New passwords do not match") }}');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                if (newPassword.value.length < 6) {
+                    alert('{{ t("New password must be at least 6 characters long") }}');
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+/* Beautiful Sex Dropdown - Vertical Layout */
+.custom-select {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  margin-top: 8px !important;
+}
+
+.beautiful-select {
+  width: 100% !important;
+  padding: 14px 50px 14px 20px !important;
+  border: 2px solid #e1e5e9 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  font-size: 16px !important;
+  color: #333 !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 500 !important;
+}
+
+.beautiful-select:hover {
+  border-color: #0d6efd !important;
+  box-shadow: 0 8px 25px rgba(13, 110, 253, 0.15) !important;
+  transform: translateY(-2px) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%) !important;
+}
+
+.beautiful-select:focus {
+  outline: none !important;
+  border-color: #0d6efd !important;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1), 0 8px 25px rgba(13, 110, 253, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+.custom-select::after {
+  content: '▼' !important;
+  position: absolute !important;
+  top: 50% !important;
+  right: 20px !important;
+  transform: translateY(-50%) !important;
+  color: #666 !important;
+  font-size: 14px !important;
+  pointer-events: none !important;
+  transition: all 0.3s ease !important;
+  font-weight: bold !important;
+}
+
+.beautiful-select:hover + .custom-select::after,
+.beautiful-select:focus + .custom-select::after {
+  color: #0d6efd !important;
+  transform: translateY(-50%) scale(1.1) !important;
+}
+
+.beautiful-select option {
+  padding: 16px 20px !important;
+  background: #fff !important;
+  color: #333 !important;
+  border: none !important;
+  font-weight: 500 !important;
+}
+
+.beautiful-select option:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+  color: #0d6efd !important;
+}
+
+.beautiful-select option:checked {
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+/* Enhanced focus and active states */
+.beautiful-select:active {
+  transform: translateY(0px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Tag Input Container */
+.tag-input-container {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  min-height: 58px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.tag-input-container:focus-within {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1), 0 8px 25px rgba(13, 110, 253, 0.15);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.language-tag {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 3px 10px rgba(13, 110, 253, 0.3);
+  transition: all 0.3s ease;
+  animation: tagSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tagSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.language-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+}
+
+.tag-text {
+  line-height: 1.2;
+}
+
+.tag-remove {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.tag-remove:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.2) rotate(90deg);
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.tag-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #333;
+  background: white;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.tag-input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.tag-input::placeholder {
+  color: #999;
+  font-size: 14px;
+}
+
+.language-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1001;
+  display: none;
+  animation: suggestionsSlideIn 0.2s ease;
+}
+
+@keyframes suggestionsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-suggestions.active {
+  display: block;
+}
+
+.language-suggestions::-webkit-scrollbar {
+  width: 8px;
+}
+
+.language-suggestions::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.language-suggestions::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.language-suggestions::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+.suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding-left: 20px;
+}
+
+.suggestion-text {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+}
+
+.suggestion-item:hover .suggestion-text {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.no-suggestions {
+  padding: 16px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* Language Warning */
+.language-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 2px solid #ffc107;
+  border-left: 5px solid #ff9800;
+  border-radius: 10px;
+  color: #856404;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.25);
+  animation: warningSlideIn 0.3s ease;
+  transition: opacity 0.3s ease;
+  z-index: 1002;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Password Section */
+.password-section {
+  margin: 24px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.password-section h3 {
+  margin: 0 0 16px 0;
+  color: #495057;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.password-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.password-fields label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.password-fields input[type="password"] {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.password-fields input[type="password"]:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+}
+
+@keyframes warningSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.warning-text {
+  line-height: 1.4;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .beautiful-select {
+    padding: 16px 50px 16px 20px !important;
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  .tag-input {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  .language-tag {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  
+  .tag-remove {
+    width: 20px;
+    height: 20px;
+    font-size: 16px;
+  }
+  
+  .language-suggestions {
+    max-height: 200px;
+  }
+}
+</style>
+
+<script>
+// Avatar preview (no auto-upload, waits for Save button)
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate file size (5MB max)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('{{ t("File too large. Maximum size is 5MB") }}');
+            input.value = '';
+            return;
+        }
+        
+        // Validate file type
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('{{ t("Invalid file type. Please upload PNG, JPG, JPEG, GIF, or WEBP") }}');
+            input.value = '';
+            return;
+        }
+        
+        // Show preview immediately (local file)
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('avatar-preview');
+            preview.src = e.target.result;
+            preview.dataset.hasNewImage = 'true';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Remove avatar (mark for deletion on save)
+function removeAvatar() {
+    if (confirm('{{ t("Delete avatar and use default?") }}')) {
+        // Set flag to delete avatar when form is submitted
+        document.getElementById('delete-avatar-flag').value = 'true';
+        
+        // Show default avatar preview
+        const preview = document.getElementById('avatar-preview');
+        const defaultAvatar = '{{ "/static/avatar_female.svg" if current_user.sex == "Female" else "/static/avatar_male.svg" }}';
+        preview.src = defaultAvatar;
+        preview.dataset.hasNewImage = 'deleted';
+        
+        // Clear file input
+        document.getElementById('avatar-file-input').value = '';
+        
+        // Hide delete button
+        const deleteBtn = document.querySelector('.btn-delete-avatar');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
+    }
+}
+
+// Force reload avatar on page load if just uploaded
+window.addEventListener('DOMContentLoaded', function() {
+    // Check if we just came back from upload (flash message present)
+    const flashMessages = document.querySelectorAll('.alert-success');
+    const avatarPreview = document.getElementById('avatar-preview');
+    
+    if (flashMessages.length > 0 && avatarPreview) {
+        // Check if message is about avatar
+        for (let msg of flashMessages) {
+            if (msg.textContent.includes('Avatar') || msg.textContent.includes('头像')) {
+                // Get the base URL without parameters
+                const baseUrl = avatarPreview.src.split('?')[0];
+                
+                // Create a new image object to preload
+                const newImg = new Image();
+                
+                // Add loading indicator
+                avatarPreview.style.opacity = '0.6';
+                avatarPreview.style.filter = 'blur(2px)';
+                
+                // When new image loads successfully
+                newImg.onload = function() {
+                    // Smooth transition to new image
+                    avatarPreview.style.transition = 'opacity 0.3s ease, filter 0.3s ease';
+                    avatarPreview.src = newImg.src;
+                    avatarPreview.style.opacity = '1';
+                    avatarPreview.style.filter = 'none';
+                };
+                
+                // If image fails to load, retry with delay
+                newImg.onerror = function() {
+                    console.log('Avatar load failed, retrying...');
+                    setTimeout(() => {
+                        newImg.src = baseUrl + '?retry=' + new Date().getTime();
+                    }, 500);
+                };
+                
+                // Start loading with cache-busting parameter
+                newImg.src = baseUrl + '?v=' + new Date().getTime();
+                
+                break;
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}

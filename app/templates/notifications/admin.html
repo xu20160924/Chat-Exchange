@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>通知管理</h1>
+
+<div class="admin-notifications">
+  <div class="notification-form">
+    <h2>创建新通知</h2>
+    <form method="post" action="{{ url_for('notifications.admin_create') }}">
+      <div class="form-group">
+        <label for="title">标题</label>
+        <input type="text" id="title" name="title" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="content">内容</label>
+        <textarea id="content" name="content" required></textarea>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="type">类型</label>
+          <select id="type" name="type">
+            <option value="info">信息</option>
+            <option value="success">成功</option>
+            <option value="warning">警告</option>
+            <option value="error">错误</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="priority">优先级</label>
+          <select id="priority" name="priority">
+            <option value="1">低</option>
+            <option value="2">中</option>
+            <option value="3">高</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="is_global" name="is_global" checked>
+            <label for="is_global">全局通知</label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="expires_days">过期天数 (留空表示永不过期)</label>
+          <input type="number" id="expires_days" name="expires_days" min="1" max="365">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="target_user_id">目标用户ID (仅非全局通知)</label>
+        <input type="number" id="target_user_id" name="target_user_id">
+      </div>
+      
+      <button type="submit" class="btn">创建通知</button>
+    </form>
+  </div>
+
+  <h2>现有通知</h2>
+  
+  {% if notifications %}
+    {% for notification in notifications %}
+    <div class="admin-notification">
+      <div class="admin-notification-header">
+        <div>
+          <h3 class="admin-notification-title">{{ notification.title }}</h3>
+          <p class="admin-notification-meta">
+            创建时间: {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}
+            | 类型: {{ notification.notification_type }}
+            | 优先级: {{ notification.priority }}
+            | 状态: <span class="notification-status {{ 'active' if notification.is_active else 'inactive' }}">
+              {{ '激活' if notification.is_active else '停用' }}
+            </span>
+            {% if notification.expires_at %}
+              | 过期时间: {{ notification.expires_at.strftime('%Y-%m-%d %H:%M') }}
+            {% endif %}
+          </p>
+        </div>
+      </div>
+      
+      <div class="admin-notification-content">
+        {{ notification.content }}
+      </div>
+      
+      <div class="admin-notification-actions">
+        <form method="post" action="{{ url_for('notifications.admin_toggle', notification_id=notification.id) }}" style="display: inline;">
+          <button type="submit" class="btn btn-outline">
+            {{ '停用' if notification.is_active else '激活' }}
+          </button>
+        </form>
+        
+        <form method="post" action="{{ url_for('notifications.admin_delete', notification_id=notification.id) }}" 
+              style="display: inline;" 
+              onsubmit="return confirm('确定要删除这个通知吗？')">
+          <button type="submit" class="btn btn-outline" style="color: #d32f2f; border-color: #d32f2f;">
+            删除
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p>目前没有任何通知</p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+// 当取消全局通知时，显示目标用户ID输入框
+document.getElementById('is_global').addEventListener('change', function() {
+  const targetUserIdGroup = document.getElementById('target_user_id').parentElement;
+  if (this.checked) {
+    targetUserIdGroup.style.display = 'none';
+  } else {
+    targetUserIdGroup.style.display = 'block';
+  }
+});
+
+// 初始化时隐藏目标用户ID输入框（因为默认是全局通知）
+document.addEventListener('DOMContentLoaded', function() {
+  const isGlobal = document.getElementById('is_global');
+  const targetUserIdGroup = document.getElementById('target_user_id').parentElement;
+  if (isGlobal.checked) {
+    targetUserIdGroup.style.display = 'none';
+  }
+});
+</script>
+{% endblock %}

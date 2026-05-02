@@ -1,0 +1,707 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ t('Search partners') }}</h1>
+<!-- Page version: v2.0 - If you see this in browser inspector, page is latest -->
+
+<div class="search-card">
+  <form method="get" class="search-form" novalidate>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="filter-label">{{ t('I speak') }}</label>
+        <select name="speak" class="filter-select">
+          <option value="">{{ t('Select language') }}</option>
+          <option value="English" {% if request.args.get('speak')=='English' %}selected{% endif %}>English</option>
+          <option value="中文" {% if request.args.get('speak')=='中文' %}selected{% endif %}>中文</option>
+          <option value="Español" {% if request.args.get('speak')=='Español' %}selected{% endif %}>Español</option>
+          <option value="Français" {% if request.args.get('speak')=='Français' %}selected{% endif %}>Français</option>
+          <option value="Deutsch" {% if request.args.get('speak')=='Deutsch' %}selected{% endif %}>Deutsch</option>
+          <option value="Português" {% if request.args.get('speak')=='Português' %}selected{% endif %}>Português</option>
+          <option value="Italiano" {% if request.args.get('speak')=='Italiano' %}selected{% endif %}>Italiano</option>
+          <option value="日本語" {% if request.args.get('speak')=='日本語' %}selected{% endif %}>日本語</option>
+          <option value="한국어" {% if request.args.get('speak')=='한국어' %}selected{% endif %}>한국어</option>
+          <option value="Русский" {% if request.args.get('speak')=='Русский' %}selected{% endif %}>Русский</option>
+          <option value="العربية" {% if request.args.get('speak')=='العربية' %}selected{% endif %}>العربية</option>
+          <option value="हिन्दी" {% if request.args.get('speak')=='हिन्दी' %}selected{% endif %}>हिन्दी</option>
+          <option value="Türkçe" {% if request.args.get('speak')=='Türkçe' %}selected{% endif %}>Türkçe</option>
+          <option value="Tiếng Việt" {% if request.args.get('speak')=='Tiếng Việt' %}selected{% endif %}>Tiếng Việt</option>
+          <option value="ไทย" {% if request.args.get('speak')=='ไทย' %}selected{% endif %}>ไทย</option>
+          <option value="Bahasa Indonesia" {% if request.args.get('speak')=='Bahasa Indonesia' %}selected{% endif %}>Bahasa Indonesia</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">{{ t("I'm learning") }}</label>
+        <select name="learn" class="filter-select">
+          <option value="">{{ t('Select language') }}</option>
+          <option value="English" {% if request.args.get('learn')=='English' %}selected{% endif %}>English</option>
+          <option value="中文" {% if request.args.get('learn')=='中文' %}selected{% endif %}>中文</option>
+          <option value="Español" {% if request.args.get('learn')=='Español' %}selected{% endif %}>Español</option>
+          <option value="Français" {% if request.args.get('learn')=='Français' %}selected{% endif %}>Français</option>
+          <option value="Deutsch" {% if request.args.get('learn')=='Deutsch' %}selected{% endif %}>Deutsch</option>
+          <option value="Português" {% if request.args.get('learn')=='Português' %}selected{% endif %}>Português</option>
+          <option value="Italiano" {% if request.args.get('learn')=='Italiano' %}selected{% endif %}>Italiano</option>
+          <option value="日本語" {% if request.args.get('learn')=='日本語' %}selected{% endif %}>日本語</option>
+          <option value="한국어" {% if request.args.get('learn')=='한국어' %}selected{% endif %}>한국어</option>
+          <option value="Русский" {% if request.args.get('learn')=='Русский' %}selected{% endif %}>Русский</option>
+          <option value="العربية" {% if request.args.get('learn')=='العربية' %}selected{% endif %}>العربية</option>
+          <option value="हिन्दी" {% if request.args.get('learn')=='हिन्दी' %}selected{% endif %}>हिन्दी</option>
+          <option value="Türkçe" {% if request.args.get('learn')=='Türkçe' %}selected{% endif %}>Türkçe</option>
+          <option value="Tiếng Việt" {% if request.args.get('learn')=='Tiếng Việt' %}selected{% endif %}>Tiếng Việt</option>
+          <option value="ไทย" {% if request.args.get('learn')=='ไทย' %}selected{% endif %}>ไทย</option>
+          <option value="Bahasa Indonesia" {% if request.args.get('learn')=='Bahasa Indonesia' %}selected{% endif %}>Bahasa Indonesia</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">{{ t('Location') }}</label>
+        <select name="location" class="filter-select">
+          <option value="">{{ t('Select location') }}</option>
+          <option value="United States" {% if request.args.get('location')=='United States' %}selected{% endif %}>United States</option>
+          <option value="United Kingdom" {% if request.args.get('location')=='United Kingdom' %}selected{% endif %}>United Kingdom</option>
+          <option value="Canada" {% if request.args.get('location')=='Canada' %}selected{% endif %}>Canada</option>
+          <option value="Australia" {% if request.args.get('location')=='Australia' %}selected{% endif %}>Australia</option>
+          <option value="New Zealand" {% if request.args.get('location')=='New Zealand' %}selected{% endif %}>New Zealand</option>
+          <option value="China" {% if request.args.get('location')=='China' %}selected{% endif %}>China</option>
+          <option value="Japan" {% if request.args.get('location')=='Japan' %}selected{% endif %}>Japan</option>
+          <option value="South Korea" {% if request.args.get('location')=='South Korea' %}selected{% endif %}>South Korea</option>
+          <option value="France" {% if request.args.get('location')=='France' %}selected{% endif %}>France</option>
+          <option value="Germany" {% if request.args.get('location')=='Germany' %}selected{% endif %}>Germany</option>
+          <option value="Italy" {% if request.args.get('location')=='Italy' %}selected{% endif %}>Italy</option>
+          <option value="Spain" {% if request.args.get('location')=='Spain' %}selected{% endif %}>Spain</option>
+          <option value="Portugal" {% if request.args.get('location')=='Portugal' %}selected{% endif %}>Portugal</option>
+          <option value="Brazil" {% if request.args.get('location')=='Brazil' %}selected{% endif %}>Brazil</option>
+          <option value="Mexico" {% if request.args.get('location')=='Mexico' %}selected{% endif %}>Mexico</option>
+          <option value="Russia" {% if request.args.get('location')=='Russia' %}selected{% endif %}>Russia</option>
+          <option value="India" {% if request.args.get('location')=='India' %}selected{% endif %}>India</option>
+          <option value="Turkey" {% if request.args.get('location')=='Turkey' %}selected{% endif %}>Turkey</option>
+          <option value="Vietnam" {% if request.args.get('location')=='Vietnam' %}selected{% endif %}>Vietnam</option>
+          <option value="Thailand" {% if request.args.get('location')=='Thailand' %}selected{% endif %}>Thailand</option>
+          <option value="Indonesia" {% if request.args.get('location')=='Indonesia' %}selected{% endif %}>Indonesia</option>
+          <option value="Egypt" {% if request.args.get('location')=='Egypt' %}selected{% endif %}>Egypt</option>
+          <option value="Saudi Arabia" {% if request.args.get('location')=='Saudi Arabia' %}selected{% endif %}>Saudi Arabia</option>
+          <option value="Ireland" {% if request.args.get('location')=='Ireland' %}selected{% endif %}>Ireland</option>
+          <option value="Sweden" {% if request.args.get('location')=='Sweden' %}selected{% endif %}>Sweden</option>
+          <option value="Poland" {% if request.args.get('location')=='Poland' %}selected{% endif %}>Poland</option>
+          <option value="Morocco" {% if request.args.get('location')=='Morocco' %}selected{% endif %}>Morocco</option>
+          <option value="Iran" {% if request.args.get('location')=='Iran' %}selected{% endif %}>Iran</option>
+          <option value="Argentina" {% if request.args.get('location')=='Argentina' %}selected{% endif %}>Argentina</option>
+          <option value="Czechia" {% if request.args.get('location')=='Czechia' %}selected{% endif %}>Czechia</option>
+          <option value="Nigeria" {% if request.args.get('location')=='Nigeria' %}selected{% endif %}>Nigeria</option>
+        </select>
+      </div>
+
+      <div class="filter-group age-group">
+        <label class="filter-label">{{ t('Age range') }}</label>
+        <div class="age-range-inputs">
+              <input type="number" name="age_min" class="age-input" placeholder="{{ t('Min') }}" 
+                     value="{{ request.args.get('age_min', '') }}" min="18">
+              <span class="age-separator">-</span>
+              <input type="number" name="age_max" class="age-input" placeholder="{{ t('Max') }}" 
+                     value="{{ request.args.get('age_max', '') }}" min="18">
+        </div>
+        <!-- Compact floating tooltip version placed right under age inputs -->
+        <div id="age-validation-box" class="age-tooltip" style="display: none;">
+          <div class="age-tooltip-icon">⚠️</div>
+          <div class="age-tooltip-text" id="age-validation-message">{{ t('Age must be greater than or equal to 18') }}</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="filter-row">
+
+      <div class="filter-group">
+        <label class="filter-label">{{ t('Sex') }}</label>
+        <select name="sex" class="filter-select">
+          <option value="">{{ t('Select gender') }}</option>
+          <option value="Male" {% if request.args.get('sex')=='Male' %}selected{% endif %}>{{ t('Male') }}</option>
+          <option value="Female" {% if request.args.get('sex')=='Female' %}selected{% endif %}>{{ t('Female') }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">{{ t('Match type') }}</label>
+        <select name="mode" class="filter-select">
+          <option value="exchange" {% if request.args.get('mode','exchange')=='exchange' %}selected{% endif %}>{{ t('Exchange match') }}</option>
+          <option value="any" {% if request.args.get('mode')=='any' %}selected{% endif %}>{{ t('Any match') }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group search-button-group">
+        <label class="filter-label">&nbsp;</label>
+        <button type="submit" class="search-button" id="search-button">{{ t('Search') }}</button>
+        <button type="button" class="reset-button" id="reset-button">{{ t('Reset') }}</button>
+      </div>
+    </div>
+  </form>
+
+  <p class="search-tip">{{ t('Tip: Exchange match finds partners whose native language equals what you are learning, and who are learning your native language.') }}</p>
+</div>
+
+
+<!-- Search Page Ad - Temporarily Hidden -->
+<!--
+<div class="ad-container">
+  <ins class="adsbygoogle ad-responsive"
+       style="display:block"
+       data-ad-client="ca-pub-8955117503238507"
+       data-ad-slot="3456789012"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+-->
+
+{% if users %}
+  <div class="search-meta">{{ t('Results') }} • {{ users|length }}</div>
+  <div class="grid" style="margin-top:10px">
+    {% for u in users %}
+    <div class="user-card">
+      <div class="user-card-header">
+        <img class="avatar-img" src="{{ u.get_avatar_url() }}" alt="avatar">
+        <div class="user-header-info">
+          <div class="user-name"><a href="{{ url_for('main.profile', user_id=u.id) }}">{{ u.name }}</a></div>
+          <div class="user-meta-row">
+            {% if u.location %}
+              <span class="user-location">📍 {{ u.location }}</span>
+            {% endif %}
+            {% if u.age %}
+              <span class="user-age">{{ u.age }} yrs</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <div class="user-card-body">
+        <div class="chips">
+          {% if u.native_languages %}
+            <span class="chip chip-native">{{ t('Native') }}: {{ u.native_languages }}</span>
+          {% endif %}
+          {% if u.learning_languages %}
+            <span class="chip chip-learn">{{ t('Learning') }}: {{ u.learning_languages }}</span>
+          {% endif %}
+        </div>
+        
+        {% if user_times and u.id in user_times %}
+          <div class="user-local-time">
+            <span class="time-icon">🕐</span>
+            <span class="time-label">{{ t('Local time') }}:</span>
+            <span class="time-text">{{ user_times[u.id]['time'] }}</span>
+          </div>
+        {% endif %}
+        
+        {% if u.bio %}
+          <div class="user-bio">
+            <span class="bio-icon">💬</span>
+            <span class="bio-text">{{ u.bio }}</span>
+          </div>
+        {% endif %}
+      </div>
+      
+      <div class="user-card-footer">
+        <a class="btn-message" href="{{ url_for('msg.thread', other_id=u.id) }}">
+          <span class="btn-icon">✉️</span>
+          <span class="btn-text">{{ t('Message') }}</span>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    {% if searched %}
+      <div class="empty-title">{{ t('No matching results.') }}</div>
+      <div class="empty-tip muted small">{{ t('Try relaxing filters or switch to Any match.') }}</div>
+      
+      {% if not current_user.is_authenticated %}
+      <!-- Registration prompt for non-logged-in users -->
+      <div class="register-prompt">
+        <div class="register-prompt-icon">💡</div>
+        <div class="register-prompt-content">
+          <h3 class="register-prompt-title">{{ t('Want to be discovered by others?') }}</h3>
+          <p class="register-prompt-text">{{ t('Create your profile so other language learners can find you and start conversations. Registration is free and takes just a minute!') }}</p>
+          <a href="{{ url_for('auth.register_page') }}" class="btn btn-register-prompt">{{ t('Create Free Account') }}</a>
+        </div>
+      </div>
+      {% endif %}
+    {% else %}
+      <div class="empty-title">{{ t('Ready to find your language partner?') }}</div>
+      <div class="empty-tip muted small">{{ t('Select your preferences above and click Search to find partners.') }}</div>
+    {% endif %}
+  </div>
+{% endif %}
+<script>
+console.log('===== SEARCH PAGE JAVASCRIPT LOADING v2.0 =====');
+
+// Function to reset all search filters
+function resetFilters() {
+    console.log('=== RESET FILTERS CALLED ===');
+    
+    try {
+        // Simply redirect to the clean search page without any query parameters
+        window.location.href = '/search';
+        console.log('=== REDIRECTING TO CLEAN SEARCH PAGE ===');
+    } catch (error) {
+        console.error('Error in resetFilters:', error);
+    }
+}
+
+// Function to show age validation prompt box
+function showAgeValidationBox() {
+    const validationBox = document.getElementById('age-validation-box');
+    const validationMessage = document.getElementById('age-validation-message');
+    const ageGroup = document.querySelector('.age-group');
+    
+    if (!validationBox || !validationMessage) {
+        console.log('Validation box elements not found');
+        return;
+    }
+    
+    // Get current language from HTML attributes (set by server-side)
+    const currentLang = document.documentElement.lang || 
+                       document.documentElement.getAttribute('data-lang') || 
+                       'en';
+    console.log('Current language detected:', currentLang);
+    
+    // Define validation messages based on language
+    const minMessages = {
+        'en': 'Age must be greater than or equal to 18',
+        'zh': '年龄必须大于或等于18',
+        'es': 'La edad debe ser mayor o igual a 18',
+        'fr': 'L\'âge doit être supérieur ou égal à 18',
+        'de': 'Das Alter muss größer oder gleich 18 sein',
+        'it': 'L\'età deve essere maggiore o uguale a 18',
+        'pt': 'A idade deve ser maior ou igual a 18',
+        'ar': 'يجب أن يكون العمر أكبر من أو يساوي 18',
+        'ja': '年齢は18歳以上である必要があります',
+        'ko': '나이는 18세 이상이어야 합니다',
+        'ru': 'Возраст должен быть больше или равен 18'
+    };
+    
+    const message = minMessages[currentLang] || minMessages['en'];
+    
+    // Update the message
+    validationMessage.textContent = message;
+    
+    // Show the box with multiple style properties to ensure visibility
+    validationBox.style.display = 'flex';
+    validationBox.style.visibility = 'visible';
+    validationBox.style.opacity = '1';
+    if (ageGroup) {
+        ageGroup.classList.add('age-group--invalid');
+    }
+    
+    console.log('Showing age validation box');
+    console.log('Language:', currentLang);
+    console.log('Message:', message);
+    console.log('Box display style:', validationBox.style.display);
+    console.log('Box visibility:', window.getComputedStyle(validationBox).display);
+}
+
+// Function to hide age validation prompt box
+function hideAgeValidationBox() {
+    const validationBox = document.getElementById('age-validation-box');
+    const ageGroup = document.querySelector('.age-group');
+    if (validationBox) {
+        validationBox.style.display = 'none';
+        validationBox.style.visibility = 'hidden';
+        validationBox.style.opacity = '0';
+        console.log('Hiding age validation box');
+    }
+    if (ageGroup) {
+        ageGroup.classList.remove('age-group--invalid');
+    }
+}
+
+// Function to get localized validation message
+function getValidationMessage() {
+    // Get current language from HTML attributes (set by server-side)
+    const currentLang = document.documentElement.lang || 
+                       document.documentElement.getAttribute('data-lang') || 
+                       'en';
+    console.log('getValidationMessage - Current language:', currentLang);
+    
+    const messages = {
+        'en': 'Age must be greater than or equal to 18',
+        'zh': '年龄必须大于或等于18',
+        'es': 'La edad debe ser mayor o igual a 18',
+        'fr': 'L\'âge doit être supérieur ou égal à 18',
+        'de': 'Das Alter muss größer oder gleich 18 sein',
+        'it': 'L\'età deve essere maggiore o uguale a 18',
+        'pt': 'A idade deve ser maior ou igual a 18',
+        'ar': 'يجب أن يكون العمر أكبر من أو يساوي 18',
+        'ja': '年齢は18歳以上である必要があります',
+        'ko': '나이는 18세 이상이어야 합니다',
+        'ru': 'Возраст должен быть больше или равен 18'
+    };
+    
+    const message = messages[currentLang] || messages['en'];
+    console.log('getValidationMessage - Selected message:', message);
+    return message;
+}
+
+// Function to validate individual age input
+function validateAgeInput(inputElement) {
+    if (!inputElement) return;
+    
+    const value = parseInt(inputElement.value);
+    const minAge = 18;
+    
+    console.log('Validating age input:', inputElement.value, 'parsed:', value);
+    
+    if (inputElement.value.trim() !== '') {
+        if (isNaN(value) || value < minAge) {
+            console.log('Invalid age detected, showing prompt box');
+            showAgeValidationBox();
+        } else {
+            console.log('Valid age, checking if should hide prompt box');
+            // Check if both inputs are valid, then hide the box
+            const ageMinInput = document.querySelector('input[name="age_min"]');
+            const ageMaxInput = document.querySelector('input[name="age_max"]');
+            
+            let shouldHide = true;
+            
+            if (ageMinInput && ageMinInput.value.trim() !== '') {
+                const minValue = parseInt(ageMinInput.value);
+                if (isNaN(minValue) || minValue < minAge) {
+                    shouldHide = false;
+                }
+            }
+            
+            if (ageMaxInput && ageMaxInput.value.trim() !== '') {
+                const maxValue = parseInt(ageMaxInput.value);
+                if (isNaN(maxValue) || maxValue < minAge) {
+                    shouldHide = false;
+                }
+            }
+            
+            if (shouldHide) {
+                hideAgeValidationBox();
+            }
+        }
+    } else {
+        console.log('Empty input, checking if should hide prompt box');
+        // Check if both inputs are empty or valid, then hide the box
+        const ageMinInput = document.querySelector('input[name="age_min"]');
+        const ageMaxInput = document.querySelector('input[name="age_max"]');
+        
+        let shouldHide = true;
+        
+        if (ageMinInput && ageMinInput.value.trim() !== '') {
+            const minValue = parseInt(ageMinInput.value);
+            if (isNaN(minValue) || minValue < minAge) {
+                shouldHide = false;
+            }
+        }
+        
+        if (ageMaxInput && ageMaxInput.value.trim() !== '') {
+            const maxValue = parseInt(ageMaxInput.value);
+            if (isNaN(maxValue) || maxValue < minAge) {
+                shouldHide = false;
+            }
+        }
+        
+        if (shouldHide) {
+            hideAgeValidationBox();
+        }
+    }
+}
+
+// Function to validate all ages and show tooltip
+function validateAges() {
+    const ageMinInput = document.querySelector('input[name="age_min"]');
+    const ageMaxInput = document.querySelector('input[name="age_max"]');
+    
+    console.log('validateAges function called');
+    console.log('ageMinInput:', ageMinInput);
+    console.log('ageMaxInput:', ageMaxInput);
+    
+    if (!ageMinInput && !ageMaxInput) {
+        console.log('No age inputs found');
+        return true;
+    }
+    
+    let hasError = false;
+    let firstInvalidInput = null;
+    
+    // Validate age_min
+    if (ageMinInput && ageMinInput.value.trim() !== '') {
+        const value = parseInt(ageMinInput.value);
+        console.log('Checking age_min:', ageMinInput.value, 'parsed:', value);
+        
+        if (isNaN(value) || value < 18) {
+            console.log('age_min validation failed');
+            hasError = true;
+            if (!firstInvalidInput) {
+                firstInvalidInput = ageMinInput;
+            }
+        }
+    }
+    
+    // Validate age_max
+    if (ageMaxInput && ageMaxInput.value.trim() !== '') {
+        const value = parseInt(ageMaxInput.value);
+        console.log('Checking age_max:', ageMaxInput.value, 'parsed:', value);
+        
+        if (isNaN(value) || value < 18) {
+            console.log('age_max validation failed');
+            hasError = true;
+            if (!firstInvalidInput) {
+                firstInvalidInput = ageMaxInput;
+            }
+        }
+    }
+    
+    if (hasError) {
+        console.log('Validation failed, showing custom prompt box');
+        showAgeValidationBox();
+        
+        // Focus on the first invalid input to help user
+        if (firstInvalidInput) {
+            setTimeout(() => {
+                firstInvalidInput.focus();
+                firstInvalidInput.select();
+            }, 100);
+        }
+        
+        return false;
+    }
+    
+    console.log('Validation passed, hiding prompt box');
+    hideAgeValidationBox();
+    return true;
+}
+
+// Wait for page to load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, setting up validation');
+
+    const searchForm = document.querySelector('.search-form');
+    console.log('Search form found:', searchForm);
+
+    if (searchForm) {
+        // Primary validation on form submit with aggressive prevention
+        searchForm.addEventListener('submit', function(e) {
+            console.log('========================================');
+            console.log('FORM SUBMIT EVENT TRIGGERED');
+            console.log('========================================');
+            
+            console.log('Running age validation...');
+            const isValid = validateAges();
+            console.log('Validation result:', isValid);
+
+            if (!isValid) {
+                console.log('!!!!! VALIDATION FAILED !!!!!');
+                console.log('PREVENTING FORM SUBMISSION');
+                
+                // Prevent submission aggressively
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Scroll to validation box if needed
+                const validationBox = document.getElementById('age-validation-box');
+                if (validationBox && validationBox.style.display === 'flex') {
+                    validationBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                
+                console.log('Form submission BLOCKED successfully');
+                return false;
+            }
+
+            console.log('Validation PASSED - Allowing form submission');
+            return true;
+        }, true); // Use capture phase
+        
+        console.log('Form submit event listener attached successfully');
+    } else {
+        console.log('ERROR: Search form not found');
+    }
+    
+    // Add real-time validation to age inputs
+    const ageMinInput = document.querySelector('input[name="age_min"]');
+    const ageMaxInput = document.querySelector('input[name="age_max"]');
+    
+    console.log('Setting up real-time validation for age inputs');
+    console.log('ageMinInput:', ageMinInput);
+    console.log('ageMaxInput:', ageMaxInput);
+    
+    if (ageMinInput) {
+        ageMinInput.addEventListener('input', function() {
+            console.log('age_min input event triggered');
+            validateAgeInput(this);
+        });
+        
+        ageMinInput.addEventListener('blur', function() {
+            console.log('age_min blur event triggered');
+            validateAgeInput(this);
+        });
+    }
+    
+    if (ageMaxInput) {
+        ageMaxInput.addEventListener('input', function() {
+            console.log('age_max input event triggered');
+            validateAgeInput(this);
+        });
+        
+        ageMaxInput.addEventListener('blur', function() {
+            console.log('age_max blur event triggered');
+            validateAgeInput(this);
+        });
+    }
+    
+    // Add event listener for reset button
+    const resetButton = document.getElementById('reset-button');
+    console.log('Looking for reset button...');
+    console.log('Reset button found:', resetButton);
+    console.log('Reset button element:', resetButton);
+    
+    if (resetButton) {
+        resetButton.addEventListener('click', function(e) {
+            console.log('========================================');
+            console.log('RESET BUTTON CLICKED');
+            console.log('========================================');
+            e.preventDefault(); // Prevent any default action
+            e.stopPropagation();
+            resetFilters();
+        }, true); // Use capture phase
+        
+        console.log('✓ Reset button event listener attached successfully');
+        
+        // Also add a direct onclick as backup
+        resetButton.onclick = function(e) {
+            console.log('Reset button clicked via onclick');
+            e.preventDefault();
+            resetFilters();
+            return false;
+        };
+        console.log('✓ Reset button onclick handler also attached');
+    } else {
+        console.log('ERROR: Reset button not found!');
+        console.log('Searching all buttons...');
+        const allButtons = document.querySelectorAll('button');
+        console.log('All buttons found:', allButtons.length);
+        allButtons.forEach((btn, i) => {
+            console.log(`Button ${i}:`, btn.id, btn.className, btn.textContent.trim());
+        });
+    }
+    
+    // Make resetFilters globally accessible for debugging
+    window.resetFilters = resetFilters;
+    console.log('resetFilters function exposed to window object');
+    
+    // Final verification
+    console.log('=== INITIALIZATION COMPLETE ===');
+    console.log('Reset button ID:', resetButton ? resetButton.id : 'NOT FOUND');
+    console.log('Search form:', searchForm ? 'FOUND' : 'NOT FOUND');
+    console.log('Age inputs:', { 
+        min: ageMinInput ? 'FOUND' : 'NOT FOUND', 
+        max: ageMaxInput ? 'FOUND' : 'NOT FOUND' 
+    });
+    
+    // Test validation box exists
+    const testValidationBox = document.getElementById('age-validation-box');
+    console.log('Validation box element:', testValidationBox ? 'FOUND' : 'NOT FOUND');
+    if (testValidationBox) {
+        console.log('Validation box current display:', window.getComputedStyle(testValidationBox).display);
+    }
+    
+    console.log('===========================================');
+    console.log('ALL SETUP COMPLETE - Ready for interaction');
+    console.log('===========================================');
+});
+
+// Test immediately after script loads (before DOM ready)
+console.log('Script loaded, waiting for DOM...');
+console.log('resetFilters function defined:', typeof resetFilters);
+
+// Add visible confirmation for debugging
+setTimeout(function() {
+    console.log('⚠️ IMPORTANT: If you see this, JavaScript is working!');
+    console.log('Check if you see the console logs above for initialization');
+}, 1000);
+
+// Dynamic language filtering - hide selected language from the other dropdown
+function initLanguageFiltering() {
+    const speakSelect = document.querySelector('select[name="speak"]');
+    const learnSelect = document.querySelector('select[name="learn"]');
+    
+    if (!speakSelect || !learnSelect) {
+        console.log('Language selects not found');
+        return;
+    }
+    
+    // Store all original options
+    const speakOptions = Array.from(speakSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.text,
+        selected: opt.selected
+    }));
+    
+    const learnOptions = Array.from(learnSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.text,
+        selected: opt.selected
+    }));
+    
+    function updateSpeakOptions() {
+        const learnValue = learnSelect.value;
+        const currentSpeakValue = speakSelect.value;
+        
+        // Clear and rebuild options
+        speakSelect.innerHTML = '';
+        speakOptions.forEach(opt => {
+            // Skip if this language is selected in "I'm learning" (unless it's empty)
+            if (opt.value && opt.value === learnValue) {
+                return; // Don't add this option
+            }
+            
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.text = opt.text;
+            option.selected = opt.value === currentSpeakValue;
+            speakSelect.appendChild(option);
+        });
+    }
+    
+    function updateLearnOptions() {
+        const speakValue = speakSelect.value;
+        const currentLearnValue = learnSelect.value;
+        
+        // Clear and rebuild options
+        learnSelect.innerHTML = '';
+        learnOptions.forEach(opt => {
+            // Skip if this language is selected in "I speak" (unless it's empty)
+            if (opt.value && opt.value === speakValue) {
+                return; // Don't add this option
+            }
+            
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.text = opt.text;
+            option.selected = opt.value === currentLearnValue;
+            learnSelect.appendChild(option);
+        });
+    }
+    
+    // Listen for changes
+    speakSelect.addEventListener('change', function() {
+        updateLearnOptions();
+    });
+    
+    learnSelect.addEventListener('change', function() {
+        updateSpeakOptions();
+    });
+    
+    // Initial filter on page load
+    updateSpeakOptions();
+    updateLearnOptions();
+    
+    console.log('Language filtering initialized');
+}
+
+// Initialize language filtering when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initLanguageFiltering();
+});
+</script>
+{% endblock %}
